@@ -1,10 +1,11 @@
 import { Routes, Route } from "react-router-dom";
 import LoginPage from "./authentication/LoginPage";
 import RegisterPage from "./authentication/RegisterPage";
-import LandingPage from "./authentication/LandingPage";
+import LandingPage from "./UserPanel/LandingPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import AdminPage from "./authentication/Admin-SuperAdminPage";
+import SuperAdminPage from "./SuperAdminPanel/Admin-SuperAdminPage";
+import AdminPage from "./AdminPanel/AdminLandingPage";
 import VerifyEmailPage from "./authentication/VerifyEmailPage";
 
 const App = () => {
@@ -14,8 +15,9 @@ const App = () => {
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/landing" element={<LandingPage />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/user-dashboard" element={<LandingPage />} />
+        <Route path="/superadmin" element={<SuperAdminPage />} />
+        <Route path="/admin-dashboard" element={<AdminPage />} />
         <Route path="/verify" element={<VerifyEmailPage />} />
       </Routes>
     </>
