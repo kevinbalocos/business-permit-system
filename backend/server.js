@@ -278,7 +278,6 @@ app.post("/api/users/:id/status", (req, res) => {
     }
     const targetUserRole = userResults[0].role;
 
-    // Authorization logic
     if (requestingUserRole === "admin") {
       if (targetUserRole !== "user") {
         return res.status(403).json({
