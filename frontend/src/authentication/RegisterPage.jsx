@@ -529,7 +529,7 @@ const RegisterPage = () => {
                       Already have an account?
                     </p>
                     <Link
-                      to="/"
+                      to="/login"
                       className="inline-flex items-center gap-2 text-green-700 hover:text-green-800 font-semibold text-xs sm:text-sm transition-colors duration-200 hover:underline decoration-2 underline-offset-4 touch-manipulation"
                     >
                       <Shield className="w-3 h-3 sm:w-4 sm:h-4" />

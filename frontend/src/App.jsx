@@ -7,7 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import SuperAdminPage from "./SuperAdminPanel/Admin-SuperAdminPage";
 import AdminPage from "./AdminPanel/AdminLandingPage";
 import VerifyEmailPage from "./authentication/VerifyEmailPage";
-import BusinessApplication from './UserPanel/BusinessApplication';
+import BusinessApplication from "./UserPanel/BusinessApplication";
 import EntryPage from "./EntryPanel/EntryPage";
 
 const App = () => {
