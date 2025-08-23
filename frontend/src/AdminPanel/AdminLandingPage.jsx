@@ -177,7 +177,7 @@ const AdminLandingPage = () => {
         <Navbar />
 
         {/* Dashboard Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-green-600/80 via-green-600/75 to-green-700/80 p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-green-50 to-emerald-100 p-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             {stats.map((stat, index) => {

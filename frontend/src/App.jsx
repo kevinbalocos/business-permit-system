@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import SuperAdminPage from "./SuperAdminPanel/Admin-SuperAdminPage";
 import AdminPage from "./AdminPanel/AdminLandingPage";
 import VerifyEmailPage from "./authentication/VerifyEmailPage";
+import BusinessApplication from './UserPanel/BusinessApplication';
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
         <Route path="/superadmin" element={<SuperAdminPage />} />
         <Route path="/admin-dashboard" element={<AdminPage />} />
         <Route path="/verify" element={<VerifyEmailPage />} />
+        <Route path="/business-application" element={<BusinessApplication />} />
       </Routes>
     </>
   );
