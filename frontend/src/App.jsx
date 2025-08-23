@@ -7,13 +7,17 @@ import "react-toastify/dist/ReactToastify.css";
 import SuperAdminPage from "./SuperAdminPanel/Admin-SuperAdminPage";
 import AdminPage from "./AdminPanel/AdminLandingPage";
 import VerifyEmailPage from "./authentication/VerifyEmailPage";
+import EntryPage from "./EntryPanel/EntryPage";
 
 const App = () => {
   return (
     <>
       <ToastContainer />
       <Routes>
-        <Route path="/" element={<LoginPage />} />
+        <Route path="/" element={<EntryPage />} />
+
+        {/* Auth pages */}
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/user-dashboard" element={<LandingPage />} />
         <Route path="/superadmin" element={<SuperAdminPage />} />
