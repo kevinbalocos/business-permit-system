@@ -436,7 +436,7 @@ const LandingPage = () => {
               </div>
 
               {/* Reminders Section */}
-              <div className="bg-teal-50 border border-teal-200 rounded-xl p-3 sm:p-4">
+              <div className="bg-teal-50 border border-teal-200 rounded-xl p-3 sm:p-4 mb-15 sm:mb-0">
                 <div className="flex items-center gap-2 mb-2">
                   <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
                   <h2 className="text-base sm:text-lg font-semibold text-teal-800">

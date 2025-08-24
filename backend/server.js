@@ -13,6 +13,10 @@ const PORT = 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
+const businessRoutes = require("./routes/businessRoutes");
+app.use("/api/business", businessRoutes);
+app.use("/uploads", express.static("uploads"));
+
 const createDefaultSuperadmin = async () => {
   const superadminEmail = "superadmin@example.com";
   const superadminPassword = "superadminpassword"; 
