@@ -2,8 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import LoginPage from "./authentication/LoginPage";
 import RegisterPage from "./authentication/RegisterPage";
 import LandingPage from "./UserPanel/LandingPage";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Toaster } from "sonner";
 import SuperAdminPage from "./SuperAdminPanel/Admin-SuperAdminPage";
 import AdminPage from "./AdminPanel/AdminLandingPage";
 import VerifyEmailPage from "./authentication/VerifyEmailPage";
@@ -13,7 +12,9 @@ import EntryPage from "./EntryPanel/EntryPage";
 const App = () => {
   return (
     <>
-      <ToastContainer />
+      {/* Sonner Toaster (root-level). Position and props can be adjusted. */}
+      <Toaster position="top-right" />
+
       <Routes>
         <Route path="/" element={<EntryPage />} />
 
