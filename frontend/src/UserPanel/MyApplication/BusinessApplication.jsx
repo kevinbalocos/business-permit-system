@@ -123,11 +123,14 @@ const BusinessApplication = () => {
     setDocuments({ ...documents, [field]: file });
   };
 
+  // safer navigation helpers
   const nextStep = () => {
     if (step === 1) generateApplicationNumber();
-    setStep(step + 1);
+    if (step < 4) setStep((s) => s + 1);
   };
-  const prevStep = () => setStep(step - 1);
+  const prevStep = () => {
+    if (step > 1) setStep((s) => s - 1);
+  };
 
   const handleSubmit = () => {
     alert(`Application ${applicationNumber} submitted!`);
@@ -151,45 +154,145 @@ const BusinessApplication = () => {
         {/* Content area fills remaining height */}
         <div className="flex flex-1 overflow-hidden">
           {/* Main Content */}
-          <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
-            {step === 1 && (
-              <div className="bg-white p-4 flex flex-col min-h-full">
-                <h2 className="text-xl font-bold mb-4">
-                  Step 1: Select Transaction Type
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
-                  {transactionTypes.map((t) => {
-                    const Icon = t.icon;
-                    return (
-                      <div
-                        key={t.id}
-                        onClick={() => setTransactionType(t.id)}
-                        className={`p-4 border rounded-lg cursor-pointer transition transform hover:scale-[1.02] ${
-                          transactionType === t.id
-                            ? "border-teal-600 bg-teal-50"
-                            : "border-gray-200"
-                        }`}
-                      >
-                        {/* ✅ Unique Image */}
-                        <div className="mb-3">
-                          <img
-                            src={t.image}
-                            alt={`${t.title} illustration`}
-                            className="w-full h-56 object-cover rounded-md"
-                          />
-                        </div>
+          <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 flex flex-col">
+            <div className="flex-1">
+              {step === 1 && (
+                <div className="bg-white p-4 flex flex-col min-h-full">
+                  <h2 className="text-xl font-bold mb-4">
+                    Step 1: Select Transaction Type
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
+                    {transactionTypes.map((t) => {
+                      const Icon = t.icon;
+                      return (
+                        <div
+                          key={t.id}
+                          onClick={() => setTransactionType(t.id)}
+                          className={`p-4 border rounded-lg cursor-pointer transition transform hover:scale-[1.02] ${
+                            transactionType === t.id
+                              ? "border-teal-600 bg-teal-50"
+                              : "border-gray-200"
+                          }`}
+                        >
+                          {/* ✅ Unique Image */}
+                          <div className="mb-3">
+                            <img
+                              src={t.image}
+                              alt={`${t.title} illustration`}
+                              className="w-full h-56 object-cover rounded-md"
+                            />
+                          </div>
 
-                        <div className="flex items-center gap-2 mb-2">
-                          <Icon className="w-5 h-5 text-teal-600" />
-                          <h3 className="font-semibold">{t.title}</h3>
+                          <div className="flex items-center gap-2 mb-2">
+                            <Icon className="w-5 h-5 text-teal-600" />
+                            <h3 className="font-semibold">{t.title}</h3>
+                          </div>
+                          <p className="text-sm text-gray-600">
+                            {t.description}
+                          </p>
                         </div>
-                        <p className="text-sm text-gray-600">{t.description}</p>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="flex justify-end mt-6">
+              )}
+
+              {/* ✅ Render different form based on selection */}
+              {step === 2 && transactionType === "NEW" && (
+                <BusinessInformationForm
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  applicationNumber={applicationNumber}
+                />
+              )}
+
+              {step === 2 && transactionType === "RENEWAL" && (
+                <RenewalForm
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  applicationNumber={applicationNumber}
+                />
+              )}
+
+              {step === 2 && transactionType === "QUARTERLY" && (
+                <QuarterlyReportForm
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                />
+              )}
+
+              {step === 2 && transactionType === "DELINQUENT" && (
+                <DelinquentForm
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                />
+              )}
+
+              {step === 2 && transactionType === "CHANGE_REQUEST" && (
+                <ChangeRequestForm
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                />
+              )}
+
+              {step === 2 && transactionType === "RETIREMENT" && (
+                <RetirementForm
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                />
+              )}
+
+              {step === 3 && (
+                <DocumentUpload
+                  applicationNumber={applicationNumber}
+                  documents={documents}
+                  handleFileUpload={handleFileUpload}
+                />
+              )}
+
+              {step === 4 && (
+                <ReviewSummary
+                  applicationNumber={applicationNumber}
+                  formData={formData}
+                  documents={documents}
+                  onSubmit={handleSubmit}
+                />
+              )}
+            </div>
+
+            {/* FOOTER / NAV CONTROLS */}
+            <div className="mt-4 border-t pt-4 flex items-center justify-between">
+              <div>
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  disabled={step === 1}
+                  className={`px-4 py-2 rounded-lg font-semibold mr-2 ${
+                    step === 1
+                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  ← Back
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep(1);
+                    setTransactionType("");
+                  }}
+                  className="px-4 py-2 rounded-lg font-semibold bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  Start Over
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {/* On step 1 show Continue (disabled until transactionType) */}
+                {step === 1 && (
                   <button
+                    type="button"
                     onClick={nextStep}
                     disabled={!transactionType}
                     className={`px-6 py-2 rounded-lg font-semibold ${
@@ -200,71 +303,31 @@ const BusinessApplication = () => {
                   >
                     Continue →
                   </button>
-                </div>
+                )}
+
+                {/* On steps 2 & 3 show Continue to next step */}
+                {(step === 2 || step === 3) && (
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    className="px-6 py-2 rounded-lg font-semibold bg-teal-600 text-white hover:bg-teal-700"
+                  >
+                    Continue →
+                  </button>
+                )}
+
+                {/* On final step show Submit */}
+                {step === 4 && (
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    className="px-6 py-2 rounded-lg font-semibold bg-green-600 text-white hover:bg-green-700"
+                  >
+                    Submit Application
+                  </button>
+                )}
               </div>
-            )}
-
-            {/* ✅ Render different form based on selection */}
-            {step === 2 && transactionType === "NEW" && (
-              <BusinessInformationForm
-                formData={formData}
-                handleInputChange={handleInputChange}
-                applicationNumber={applicationNumber}
-              />
-            )}
-
-            {step === 2 && transactionType === "RENEWAL" && (
-              <RenewalForm
-                formData={formData}
-                handleInputChange={handleInputChange}
-                applicationNumber={applicationNumber}
-              />
-            )}
-
-            {step === 2 && transactionType === "QUARTERLY" && (
-              <QuarterlyReportForm
-                formData={formData}
-                handleInputChange={handleInputChange}
-              />
-            )}
-
-            {step === 2 && transactionType === "DELINQUENT" && (
-              <DelinquentForm
-                formData={formData}
-                handleInputChange={handleInputChange}
-              />
-            )}
-
-            {step === 2 && transactionType === "CHANGE_REQUEST" && (
-              <ChangeRequestForm
-                formData={formData}
-                handleInputChange={handleInputChange}
-              />
-            )}
-
-            {step === 2 && transactionType === "RETIREMENT" && (
-              <RetirementForm
-                formData={formData}
-                handleInputChange={handleInputChange}
-              />
-            )}
-
-            {step === 3 && (
-              <DocumentUpload
-                applicationNumber={applicationNumber}
-                documents={documents}
-                handleFileUpload={handleFileUpload}
-              />
-            )}
-
-            {step === 4 && (
-              <ReviewSummary
-                applicationNumber={applicationNumber}
-                formData={formData}
-                documents={documents}
-                onSubmit={handleSubmit}
-              />
-            )}
+            </div>
           </main>
 
           {/* Right Sidebar */}
