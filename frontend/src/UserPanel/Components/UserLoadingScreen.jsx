@@ -1,14 +1,7 @@
-// src/components/LoadingScreen.jsx
 import React from "react";
 import Logo from "../../assets/alaminos-logos.png";
 
-/**
- * LoadingScreen props:
- * - message: string (default: "Loading...")
- * - showLogo: boolean (default: true)
- * - progress: number | null (0-100). If provided shows a slim determinate bar.
- * - compact: boolean (default: false) -- slightly smaller layout
- */
+
 const LoadingScreen = ({
   message = "Loading...",
   showLogo = true,
