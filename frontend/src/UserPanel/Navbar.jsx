@@ -1,25 +1,77 @@
-import React, { useState } from 'react';
-import { Bell, Search, User, LogOut, Settings, ChevronDown } from 'lucide-react';
-import Logo from '../assets/alaminos-logos.png';
+import React, { useState, useEffect } from "react";
+import {
+  Bell,
+  Search,
+  User,
+  LogOut,
+  Settings,
+  ChevronDown,
+} from "lucide-react";
+import Logo from "../assets/alaminos-logos.png";
 import { useNavigate } from "react-router-dom";
 
-const NavbarCitizen = () => {
+const NavbarCitizen = ({
+  user: propUser = null,
+  toggleMobileMenu = () => {},
+  toggleSidebar = () => {},
+  isCollapsed = false,
+}) => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [user, setUser] = useState(propUser);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Accept user from prop first; otherwise try to read from localStorage.
+    if (propUser) {
+      setUser(propUser);
+      return;
+    }
+
+    try {
+      const stored =
+        JSON.parse(localStorage.getItem("user")) ||
+        JSON.parse(localStorage.getItem("authUser")) ||
+        null;
+      setUser(stored);
+    } catch (e) {
+      setUser(null);
+    }
+  }, [propUser]);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    localStorage.removeItem("authUser");
     navigate("/");
   };
+
+  const getDisplayName = () => {
+    if (!user) return "Citizen User";
+    const first =
+      user.first_name ?? user.firstName ?? user.fname ?? user.givenName ?? "";
+    const last =
+      user.last_name ?? user.lastName ?? user.lname ?? user.familyName ?? "";
+    const name = `${first} ${last}`.trim();
+    return name || "Citizen User";
+  };
+
+  const getRoleLabel = () => {
+    if (!user) return "Applicant";
+    // show role if present, otherwise keep Applicant
+    return user.role ? capitalize(user.role) : "Applicant";
+  };
+
+  const capitalize = (s) =>
+    typeof s === "string" ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
       <div className="flex items-center justify-between">
         {/* Logo and Title */}
         <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-          <img 
-            src={Logo} 
-            alt="eLGU Logo" 
+          <img
+            src={Logo}
+            alt="eLGU Logo"
             className="w-8 h-8 sm:w-10 sm:h-10 object-contain flex-shrink-0"
           />
           <div className="min-w-0 flex-1">
@@ -28,7 +80,9 @@ const NavbarCitizen = () => {
               <span className="sm:hidden">Alaminos</span>
               <span className="hidden lg:inline"> Citizen Portal</span>
             </h1>
-            <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">Welcome to Alaminos</p>
+            <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">
+              Welcome to Alaminos
+            </p>
           </div>
         </div>
 
@@ -40,7 +94,7 @@ const NavbarCitizen = () => {
             <input
               type="text"
               placeholder="Search services..."
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none w-48 lg:w-64"
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none w-48 lg:w-64"
             />
           </div>
 
@@ -63,15 +117,17 @@ const NavbarCitizen = () => {
             >
               {/* User info - Hidden on small mobile, visible on larger screens */}
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-gray-900">Citizen User</p>
-                <p className="text-xs text-gray-600">Applicant</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {getDisplayName()}
+                </p>
+                <p className="text-xs text-gray-600">{getRoleLabel()}</p>
               </div>
-              
+
               {/* Avatar */}
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-600 rounded-full flex items-center justify-center">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-teal-600 rounded-full flex items-center justify-center">
                 <User className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
               </div>
-              
+
               {/* Chevron - Hidden on very small screens */}
               <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 hidden xs:block" />
             </button>
@@ -80,10 +136,12 @@ const NavbarCitizen = () => {
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                 {/* Mobile: Show user info in dropdown if hidden in navbar */}
                 <div className="px-4 py-2 border-b border-gray-200 sm:hidden">
-                  <p className="text-sm font-medium text-gray-900">Citizen User</p>
-                  <p className="text-xs text-gray-600">Applicant</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {getDisplayName()}
+                  </p>
+                  <p className="text-xs text-gray-600">{getRoleLabel()}</p>
                 </div>
-                
+
                 <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2">
                   <User className="w-4 h-4" />
                   <span>Profile</span>
@@ -93,7 +151,7 @@ const NavbarCitizen = () => {
                   <span>Settings</span>
                 </button>
                 <hr className="my-2" />
-                <button 
+                <button
                   onClick={handleLogout}
                   className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
                 >

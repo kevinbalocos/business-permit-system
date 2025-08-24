@@ -55,6 +55,7 @@ const createDefaultSuperadmin = async () => {
 
 createDefaultSuperadmin();
 
+
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
 
@@ -65,44 +66,50 @@ app.post("/api/login", (req, res) => {
       return res.status(500).json({ message: "Server error" });
     }
 
-    if (results.length === 0) {
+    if (!results || results.length === 0) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
     const user = results[0];
 
+    // verify password
     const passwordMatch = bcrypt.compareSync(password, user.password);
-
     if (!passwordMatch) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
+    // email verification
     if (!user.verified) {
       return res
         .status(403)
         .json({ message: "Please verify your email before logging in." });
     }
 
-    if (user.role === "superadmin") {
-      return res.json({
-        message: "Login successful",
-        role: user.role,
-        status: user.status,
-      });
-    }
-
+    // account status checks
     if (user.status === "pending") {
-      return res.status(403).json({ message: "Your account is pending approval." });
+      return res
+        .status(403)
+        .json({ message: "Your account is pending approval." });
     }
 
     if (user.status === "denied") {
       return res.status(403).json({ message: "Your account was denied." });
     }
 
-    res.json({
-      message: "Login successful",
+    // success: prepare a safe user payload (do NOT include password)
+    const userPayload = {
+      id: user.id,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
       role: user.role,
       status: user.status,
+    };
+
+    // return the user object so frontend can save it to localStorage
+    return res.json({
+      message: "Login successful",
+      user: userPayload,
     });
   });
 });

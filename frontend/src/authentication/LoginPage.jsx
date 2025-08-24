@@ -1,3 +1,4 @@
+// src/pages/LoginPage.jsx  (replace your current file with this)
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
@@ -58,13 +59,45 @@ const LoginPage = () => {
     try {
       const res = await axios.post("http://localhost:5000/api/login", form);
 
-      const { role, status } = res.data;
+      // backend now returns: { message: "Login successful", user: { ... } }
+      const user = res.data?.user;
+      if (!user) {
+        // fallback: if backend returns old style, try role/status
+        const role = res.data?.role;
+        const status = res.data?.status;
+        localStorage.setItem("userRole", role || "");
+        localStorage.setItem("userStatus", status || "");
+        localStorage.setItem("userEmail", form.email);
+        // toast.success("Login successful (partial).");
+        // navigate depending on role if available
+        if (role === "superadmin") navigate("/superadmin");
+        else if (role === "admin") {
+          if (status === "approved") navigate("/admin-dashboard");
+          else {
+            toast.error("Your admin account is pending approval.");
+            navigate("/");
+          }
+        } else if (role === "user") {
+          if (status === "approved") navigate("/user-dashboard");
+          else {
+            toast.error("Your user account is pending approval.");
+            navigate("/");
+          }
+        } else navigate("/");
+        return;
+      }
 
-      localStorage.setItem("userRole", role);
-      localStorage.setItem("userStatus", status);
-      localStorage.setItem("userEmail", form.email);
+      // Save complete user object to localStorage so other components can read it
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("userRole", user.role || "");
+      localStorage.setItem("userStatus", user.status || "");
+      localStorage.setItem("userEmail", user.email || form.email);
 
       // toast.success("Login successful!");
+
+      // Redirect based on role/status
+      const role = user.role;
+      const status = user.status;
 
       if (role === "superadmin") {
         navigate("/superadmin");
@@ -110,49 +143,20 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Enhanced Background Image with Better Visibility */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${BgImage})` }}
       >
-        {/* Mobile-optimized overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-600/80 sm:from-teal-600/75 to-teal-800/90 sm:to-teal-800/85"></div>
-
-        {/* Additional gradient for depth */}
-        <div className="absolute inset-0 bg-gradient-to-t from-teal-900/70 sm:from-teal-900/60 via-transparent to-teal-700/50 sm:to-teal-700/40"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-600/80 sm:from-teal-600/75 to-teal-800/90 sm:to-teal-800/85" />
+        <div className="absolute inset-0 bg-gradient-to-t from-teal-900/70 sm:from-teal-900/60 via-transparent to-teal-700/50 sm:to-teal-700/40" />
       </div>
-
-      {/* Enhanced Decorative Elements - Responsive */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Mobile: smaller, fewer elements */}
-        <div className="absolute top-10 left-10 sm:top-20 sm:left-20 w-32 h-32 sm:w-72 sm:h-72 bg-teal-300/10 sm:bg-teal-300/15 rounded-full blur-2xl sm:blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-10 right-10 sm:bottom-20 sm:right-20 w-40 h-40 sm:w-96 sm:h-96 bg-teal-200/8 sm:bg-teal-200/10 rounded-full blur-2xl sm:blur-3xl animate-pulse delay-2000"></div>
-        <div className="hidden sm:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
-
-        {/* Government-style grid pattern - Hidden on mobile */}
-        <div className="hidden md:block absolute inset-0 opacity-5">
-          <div className="grid grid-cols-12 gap-4 h-full">
-            {[...Array(144)].map((_, i) => (
-              <div key={i} className="border border-white/20"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Container - Responsive Layout */}
       <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-4 sm:px-8 sm:py-8">
         <div className="w-full max-w-lg sm:max-w-6xl">
-          {/* Responsive Login Card */}
           <div className="bg-white/96 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-teal-900/25 overflow-hidden">
-            {/* Mobile: Vertical Stack, Desktop: Horizontal */}
             <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[600px]">
-              {/* Government Branding Section */}
               <div className="bg-gradient-to-br from-teal-500 to-teal-800 p-6 sm:p-8 flex flex-col justify-center items-center text-center relative order-1">
-                {/* Subtle pattern overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
                 <div className="relative z-10 space-y-4 sm:space-y-6">
-                  {/* Logo - Responsive sizing */}
                   <div className="flex justify-center">
                     <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-full p-2.5 sm:p-3 shadow-lg ring-2 sm:ring-4 ring-white/30">
                       <img
@@ -162,8 +166,6 @@ const LoginPage = () => {
                       />
                     </div>
                   </div>
-
-                  {/* Government Title - Responsive text */}
                   <div className="space-y-1 sm:space-y-2">
                     <h1 className="text-lg sm:text-2xl font-bold text-white tracking-wide leading-tight">
                       REPUBLIC OF THE PHILIPPINES
@@ -176,7 +178,6 @@ const LoginPage = () => {
                     </p>
                   </div>
 
-                  {/* System Title - Mobile optimized */}
                   <div className="pt-4 sm:pt-6 border-t border-teal-600/50 space-y-2 sm:space-y-3">
                     <h3 className="text-base sm:text-xl font-bold text-white flex flex-col sm:flex-row items-center justify-center gap-2">
                       <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -190,7 +191,6 @@ const LoginPage = () => {
                     </p>
                   </div>
 
-                  {/* System Features - Responsive grid */}
                   <div className="pt-4 sm:pt-6 space-y-2 sm:space-y-3">
                     <div className="grid grid-cols-1 gap-2 sm:gap-3 text-xs sm:text-sm text-teal-100">
                       <div className="flex items-center justify-center gap-2">
@@ -210,10 +210,8 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              {/* Login Form Section */}
               <div className="p-6 sm:p-8 flex flex-col justify-center order-2">
                 <div className="max-w-md mx-auto w-full space-y-5 sm:space-y-6">
-                  {/* Welcome Section - Mobile optimized */}
                   <div className="text-center space-y-2 sm:space-y-3">
                     <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-teal-100 rounded-full">
                       <Shield className="w-7 h-7 sm:w-8 sm:h-8 text-teal-700" />
@@ -226,12 +224,10 @@ const LoginPage = () => {
                     </p>
                   </div>
 
-                  {/* Login Form - Touch-optimized */}
                   <form
                     onSubmit={handleSubmit}
                     className="space-y-4 sm:space-y-5"
                   >
-                    {/* Email Field */}
                     <div className="space-y-2">
                       <label className="block text-sm font-semibold text-gray-700">
                         Official Email Address
@@ -265,7 +261,6 @@ const LoginPage = () => {
                       </div>
                     </div>
 
-                    {/* Password Field */}
                     <div className="space-y-2">
                       <label className="block text-sm font-semibold text-gray-700">
                         Secure Password
@@ -310,12 +305,10 @@ const LoginPage = () => {
                       </div>
                     </div>
 
-                    {/* Submit Button - Touch-friendly */}
                     <button
                       type="submit"
                       disabled={loading}
-                      className={`
-                        group relative w-full py-3.5 sm:py-4 px-6 rounded-lg font-semibold text-sm sm:text-base
+                      className={`group relative w-full py-3.5 sm:py-4 px-6 rounded-lg font-semibold text-sm sm:text-base
                         transition-all duration-300 transform hover:scale-[1.01] active:scale-95
                         focus:outline-none focus:ring-4 focus:ring-teal-200 touch-manipulation
                         ${
@@ -340,7 +333,6 @@ const LoginPage = () => {
                     </button>
                   </form>
 
-                  {/* Registration Link - Mobile optimized */}
                   <div className="text-center pt-4 border-t border-gray-200 space-y-2">
                     <p className="text-xs sm:text-sm text-gray-600">
                       New business applicant?
@@ -354,7 +346,6 @@ const LoginPage = () => {
                     </Link>
                   </div>
 
-                  {/* Footer Info - Responsive */}
                   <div className="text-center pt-3 sm:pt-4 space-y-1 sm:space-y-2">
                     <div className="text-xs text-gray-400">
                       <p>© 2025 Municipality of Alaminos, Laguna</p>
@@ -369,8 +360,8 @@ const LoginPage = () => {
             </div>
           </div>
         </div>
-      </div>
-
+      </div>{" "}
+      {/* end main */}
       <style jsx>{`
         @keyframes fade-in {
           from {
@@ -382,7 +373,6 @@ const LoginPage = () => {
             transform: translateY(0);
           }
         }
-
         @keyframes scale-in {
           from {
             opacity: 0;
@@ -393,44 +383,32 @@ const LoginPage = () => {
             transform: scale(1);
           }
         }
-
         .animate-fade-in {
           animation: fade-in 1.2s ease-out;
         }
-
         .animate-scale-in {
           animation: scale-in 0.4s ease-out;
         }
-
         .touch-manipulation {
           touch-action: manipulation;
         }
-
-        /* Mobile viewport optimization */
         @media (max-width: 640px) {
-          /* Prevent zoom on input focus in iOS */
           input[type="text"],
           input[type="email"],
           input[type="password"] {
             font-size: 16px !important;
           }
-
-          /* Custom scrollbar */
           ::-webkit-scrollbar {
             width: 3px;
           }
-
           ::-webkit-scrollbar-track {
             background: transparent;
           }
-
           ::-webkit-scrollbar-thumb {
             background: rgba(20, 184, 166, 0.3);
             border-radius: 3px;
           }
         }
-
-        /* Smooth transitions for responsive changes */
         * {
           transition-property: all;
           transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);

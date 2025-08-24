@@ -10,8 +10,8 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
-import SidebarCitizen from "./Sidebar";
-import NavbarCitizen from "./Navbar";
+import SidebarCitizen from "../Sidebar";
+import NavbarCitizen from "../Navbar";
 import BusinessInformationForm from "./BusinessInformationForm";
 import RenewalForm from "./RenewalForm";
 import QuarterlyReportForm from "./QuarterlyReportForm";
@@ -204,13 +204,13 @@ const BusinessApplication = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-green-50 to-emerald-100">
+    <div className="flex h-screen bg-gradient-to-br from-teal-50 to-emerald-100">
       <SidebarCitizen isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
       <div className="flex-1 flex flex-col">
         <NavbarCitizen toggleSidebar={toggleSidebar} />
         <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
           {/* Header Section */}
-          <div className="bg-white rounded-xl shadow-lg border-l-4 border-green-600 p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className="bg-white rounded-xl shadow-lg border-l-4 border-teal-600 p-4 sm:p-6 mb-4 sm:mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
@@ -221,8 +221,8 @@ const BusinessApplication = () => {
                 </p>
               </div>
               <div className="text-left sm:text-right">
-                <div className="bg-green-100 px-4 py-2 rounded-lg inline-block">
-                  <span className="text-sm font-medium text-green-600">
+                <div className="bg-teal-100 px-4 py-2 rounded-lg inline-block">
+                  <span className="text-sm font-medium text-teal-600">
                     Step {step} of 4
                   </span>
                 </div>
@@ -242,21 +242,21 @@ const BusinessApplication = () => {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
-                className="bg-green-600 h-2 rounded-full transition-all duration-500"
+                className="bg-teal-600 h-2 rounded-full transition-all duration-500"
                 style={{ width: `${(step / 4) * 100}%` }}
               ></div>
             </div>
             <div className="flex justify-between text-xs text-gray-500 mt-2">
               <span
                 className={`${
-                  step >= 3 ? "text-green-600 font-medium" : ""
+                  step >= 3 ? "text-teal-600 font-medium" : ""
                 } text-center flex-1`}
               >
                 Documents
               </span>
               <span
                 className={`${
-                  step >= 4 ? "text-green-600 font-medium" : ""
+                  step >= 4 ? "text-teal-600 font-medium" : ""
                 } text-center flex-1`}
               >
                 Review
@@ -267,7 +267,7 @@ const BusinessApplication = () => {
           {/* Step 1: Transaction Type Selection */}
           {step === 1 && (
             <div className="bg-white rounded-xl shadow-lg border border-gray-200">
-              <div className="bg-gradient-to-r from-green-600 to-green-600 text-white p-4 sm:p-6 rounded-t-xl">
+              <div className="bg-gradient-to-r from-teal-600 to-teal-600 text-white p-4 sm:p-6 rounded-t-xl">
                 <h2 className="text-xl sm:text-2xl font-semibold mb-2">
                   Step 1: Select Transaction Type
                 </h2>
@@ -284,8 +284,8 @@ const BusinessApplication = () => {
                         key={type.id}
                         className={`border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all duration-200 ${
                           transactionType === type.id
-                            ? "border-green-600 bg-green-50 shadow-lg"
-                            : "border-gray-300 hover:border-green-600 hover:shadow-md"
+                            ? "border-teal-600 bg-teal-50 shadow-lg"
+                            : "border-gray-300 hover:border-teal-600 hover:shadow-md"
                         }`}
                         onClick={() => setTransactionType(type.id)}
                       >
@@ -293,14 +293,14 @@ const BusinessApplication = () => {
                           <div
                             className={`w-4 h-4 rounded-full border-2 mr-3 flex-shrink-0 ${
                               transactionType === type.id
-                                ? "bg-green-600 border-green-600"
+                                ? "bg-teal-600 border-teal-600"
                                 : "border-gray-400"
                             }`}
                           ></div>
                           <IconComponent
                             className={`w-6 h-6 mr-2 ${
                               transactionType === type.id
-                                ? "text-green-600"
+                                ? "text-teal-600"
                                 : "text-gray-500"
                             }`}
                           />
@@ -327,7 +327,7 @@ const BusinessApplication = () => {
                     disabled={!transactionType}
                     className={`px-6 sm:px-8 py-3 rounded-lg font-semibold transition-all duration-200 text-sm sm:text-base ${
                       transactionType
-                        ? "bg-green-600 text-white hover:bg-green-700 shadow-lg"
+                        ? "bg-teal-600 text-white hover:bg-teal-700 shadow-lg"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     }`}
                   >
@@ -398,7 +398,7 @@ const BusinessApplication = () => {
                 </button>
                 <button
                   onClick={nextStep}
-                  className="order-1 sm:order-2 bg-green-600 text-white px-6 sm:px-8 py-3 rounded-lg hover:bg-green-700 transition-all duration-200 font-semibold shadow-lg text-sm sm:text-base"
+                  className="order-1 sm:order-2 bg-teal-600 text-white px-6 sm:px-8 py-3 rounded-lg hover:bg-teal-700 transition-all duration-200 font-semibold shadow-lg text-sm sm:text-base"
                 >
                   Continue to Documents →
                 </button>
@@ -423,7 +423,7 @@ const BusinessApplication = () => {
                 </button>
                 <button
                   onClick={nextStep}
-                  className="order-1 sm:order-2 bg-green-600 text-white px-6 sm:px-8 py-3 rounded-lg hover:bg-green-700 transition-all duration-200 font-semibold shadow-lg text-sm sm:text-base"
+                  className="order-1 sm:order-2 bg-teal-600 text-white px-6 sm:px-8 py-3 rounded-lg hover:bg-teal-700 transition-all duration-200 font-semibold shadow-lg text-sm sm:text-base"
                 >
                   Continue to Review →
                 </button>

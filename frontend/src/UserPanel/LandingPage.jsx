@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SidebarCitizen from "./Sidebar";
 import NavbarCitizen from "./Navbar";
+import LoadingScreen from "./Components/UserLoadingScreen";
 import {
   FilePlus,
   ClipboardList,
@@ -13,14 +14,42 @@ import {
   Calendar,
   Eye,
   Bell,
-  Activity,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const LandingPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true); // loader state
   const navigate = useNavigate();
+
+  // load user and hide loading screen after small delay
+  useEffect(() => {
+    let mounted = true;
+
+    try {
+      const storedUser =
+        JSON.parse(localStorage.getItem("user")) ||
+        JSON.parse(localStorage.getItem("authUser")) ||
+        null;
+      if (mounted) setUser(storedUser);
+    } catch (e) {
+      if (mounted) setUser(null);
+    }
+
+    // Keep the loader up briefly so it doesn't flash too fast.
+    // Adjust the timeout (ms) to taste.
+    const MINIMUM_LOADER_MS = 700;
+    const t = setTimeout(() => {
+      if (mounted) setIsLoading(false);
+    }, MINIMUM_LOADER_MS);
+
+    return () => {
+      mounted = false;
+      clearTimeout(t);
+    };
+  }, []);
 
   const applications = [
     {
@@ -94,6 +123,21 @@ const LandingPage = () => {
     setIsMobileMenuOpen(false);
   };
 
+  const getDisplayName = () => {
+    if (!user) return "Citizen User";
+    const first =
+      user.first_name ?? user.firstName ?? user.fname ?? user.givenName ?? "";
+    const last =
+      user.last_name ?? user.lastName ?? user.lname ?? user.familyName ?? "";
+    const name = `${first} ${last}`.trim();
+    return name || "Citizen User";
+  };
+
+  // Show loading screen until isLoading is false
+  if (isLoading) {
+    return <LoadingScreen message="Loading dashboard..." showLogo={true} />;
+  }
+
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
       {/* Mobile Overlay */}
@@ -111,6 +155,7 @@ const LandingPage = () => {
         isMobileMenuOpen={isMobileMenuOpen}
         toggleMobileMenu={toggleMobileMenu}
         closeMobileMenu={closeMobileMenu}
+        user={user}
       />
 
       {/* Main content */}
@@ -124,14 +169,15 @@ const LandingPage = () => {
           toggleMobileMenu={toggleMobileMenu}
           toggleSidebar={toggleSidebar}
           isCollapsed={isCollapsed}
+          user={user}
         />
 
         {/* Dashboard content */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 bg-gradient-to-br from-green-50 to-emerald-100">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 bg-gradient-to-br from-teal-50 to-emerald-100">
           {/* Welcome Header */}
           <div className="mb-4 sm:mb-6">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
-              Welcome, Citizen User
+              Welcome, {getDisplayName()}
             </h1>
             <p className="text-sm sm:text-base text-gray-600 mt-1">
               Here's your current business permit activities and updates.
@@ -150,11 +196,11 @@ const LandingPage = () => {
                     12
                   </p>
                 </div>
-                <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <FilePlus className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-600" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+                  <FilePlus className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-teal-600" />
                 </div>
               </div>
-              <p className="text-xs sm:text-sm text-green-600 flex items-center">
+              <p className="text-xs sm:text-sm text-teal-600 flex items-center">
                 <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 +2 from last month
               </p>
@@ -222,7 +268,7 @@ const LandingPage = () => {
               {/* Quick Actions */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
                 <div className="bg-white rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6 flex flex-col items-center text-center hover:shadow-lg transition-all duration-200">
-                  <FilePlus className="w-8 h-8 sm:w-10 sm:h-10 text-green-600 mb-2 sm:mb-3" />
+                  <FilePlus className="w-8 h-8 sm:w-10 sm:h-10 text-teal-600 mb-2 sm:mb-3" />
                   <h3 className="text-base sm:text-lg font-semibold text-gray-800">
                     New Application
                   </h3>
@@ -231,34 +277,34 @@ const LandingPage = () => {
                   </p>
                   <button
                     onClick={() => navigate("/business-application")}
-                    className="px-3 py-2 sm:px-4 sm:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    className="px-3 py-2 sm:px-4 sm:py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm"
                   >
                     Apply Now
                   </button>
                 </div>
 
                 <div className="bg-white rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6 flex flex-col items-center text-center hover:shadow-lg transition-all duration-200">
-                  <ClipboardList className="w-8 h-8 sm:w-10 sm:h-10 text-green-600 mb-2 sm:mb-3" />
+                  <ClipboardList className="w-8 h-8 sm:w-10 sm:h-10 text-teal-600 mb-2 sm:mb-3" />
                   <h3 className="text-base sm:text-lg font-semibold text-gray-800">
                     Track Applications
                   </h3>
                   <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3">
                     View the status of your applications.
                   </p>
-                  <button className="px-3 py-2 sm:px-4 sm:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
+                  <button className="px-3 py-2 sm:px-4 sm:py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm">
                     Track Now
                   </button>
                 </div>
 
                 <div className="bg-white rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6 flex flex-col items-center text-center hover:shadow-lg transition-all duration-200">
-                  <CreditCard className="w-8 h-8 sm:w-10 sm:h-10 text-green-600 mb-2 sm:mb-3" />
+                  <CreditCard className="w-8 h-8 sm:w-10 sm:h-10 text-teal-600 mb-2 sm:mb-3" />
                   <h3 className="text-base sm:text-lg font-semibold text-gray-800">
                     Pay Fees
                   </h3>
                   <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3">
                     Pay your pending permit fees online.
                   </p>
-                  <button className="px-3 py-2 sm:px-4 sm:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
+                  <button className="px-3 py-2 sm:px-4 sm:py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm">
                     Pay Now
                   </button>
                 </div>
@@ -286,7 +332,7 @@ const LandingPage = () => {
                         </div>
                         <div className="flex items-center gap-2 mb-2 sm:mb-3 flex-wrap">
                           {app.status === "Approved" && (
-                            <span className="flex items-center text-green-600 text-xs sm:text-sm">
+                            <span className="flex items-center text-teal-600 text-xs sm:text-sm">
                               <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />{" "}
                               Approved
                             </span>
@@ -309,17 +355,17 @@ const LandingPage = () => {
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
-                            className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                            className="bg-teal-500 h-2 rounded-full transition-all duration-300"
                             style={{ width: `${app.progress}%` }}
                           ></div>
                         </div>
                       </div>
                       <div className="flex gap-2 sm:ml-4 flex-shrink-0">
-                        <button className="px-2 py-1 sm:px-3 sm:py-1 bg-green-100 text-green-700 rounded-lg text-xs sm:text-sm hover:bg-green-200 flex items-center transition-colors">
+                        <button className="px-2 py-1 sm:px-3 sm:py-1 bg-teal-100 text-teal-700 rounded-lg text-xs sm:text-sm hover:bg-teal-200 flex items-center transition-colors">
                           <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> View
                         </button>
                         {app.status === "Approved" && (
-                          <button className="px-2 py-1 sm:px-3 sm:py-1 bg-green-100 text-green-700 rounded-lg text-xs sm:text-sm hover:bg-green-200 flex items-center transition-colors">
+                          <button className="px-2 py-1 sm:px-3 sm:py-1 bg-teal-100 text-teal-700 rounded-lg text-xs sm:text-sm hover:bg-teal-200 flex items-center transition-colors">
                             <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />{" "}
                             Download
                           </button>
@@ -344,7 +390,7 @@ const LandingPage = () => {
                       <div
                         className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
                           activity.type === "application"
-                            ? "bg-green-500"
+                            ? "bg-teal-500"
                             : activity.type === "payment"
                             ? "bg-blue-500"
                             : activity.type === "document"
@@ -373,8 +419,8 @@ const LandingPage = () => {
                 <div className="space-y-3 sm:space-y-4">
                   {upcomingEvents.map((event, index) => (
                     <div key={index} className="flex items-start gap-3">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-teal-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-gray-800 text-xs sm:text-sm">
@@ -390,14 +436,14 @@ const LandingPage = () => {
               </div>
 
               {/* Reminders Section */}
-              <div className="bg-green-50 border border-green-200 rounded-xl p-3 sm:p-4">
+              <div className="bg-teal-50 border border-teal-200 rounded-xl p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-                  <h2 className="text-base sm:text-lg font-semibold text-green-800">
+                  <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
+                  <h2 className="text-base sm:text-lg font-semibold text-teal-800">
                     Reminders
                   </h2>
                 </div>
-                <ul className="list-disc list-inside text-green-700 text-xs sm:text-sm space-y-1">
+                <ul className="list-disc list-inside text-teal-700 text-xs sm:text-sm space-y-1">
                   <li>
                     Renew your business permit before January 20, 2026 to avoid
                     penalties.
