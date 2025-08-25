@@ -144,7 +144,7 @@ const BusinessInformationForm = ({
   const disabledStyle = "opacity-60 cursor-not-allowed";
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 mb-20 sm:mb-0">
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 ">
       <div className="bg-gradient-to-r from-teal-600 to-teal-600 text-white p-4 sm:p-6 rounded-t-xl">
         <h2 className="text-xl sm:text-2xl font-semibold mb-2">
           Step 2: Business Information

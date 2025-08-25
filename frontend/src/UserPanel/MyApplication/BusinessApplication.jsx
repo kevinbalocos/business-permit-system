@@ -496,7 +496,7 @@ const BusinessApplication = () => {
         {/* Content area fills remaining height */}
         <div className="flex flex-1 overflow-hidden">
           {/* Main Content */}
-          <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 flex flex-col">
+          <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 flex flex-col mb-23 sm:mb-0">
             <div className="flex-1">
               {step === 1 && (
                 <div className="bg-white p-4 flex flex-col min-h-full">
