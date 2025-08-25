@@ -1,5 +1,12 @@
 import React from "react";
-import { Building, User, MapPin, Briefcase, FileText } from "lucide-react";
+import {
+  Building,
+  User,
+  MapPin,
+  Briefcase,
+  FileText,
+  Lock,
+} from "lucide-react";
 
 const BusinessInformationForm = ({
   formData,
@@ -133,9 +140,12 @@ const BusinessInformationForm = ({
     "Others",
   ];
 
+  // helper to produce disabled classes
+  const disabledStyle = "opacity-60 cursor-not-allowed";
+
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200">
-      <div className="bg-gradient-to-r from-green-600 to-green-600 text-white p-4 sm:p-6 rounded-t-xl">
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 mb-20 sm:mb-0">
+      <div className="bg-gradient-to-r from-teal-600 to-teal-600 text-white p-4 sm:p-6 rounded-t-xl">
         <h2 className="text-xl sm:text-2xl font-semibold mb-2">
           Step 2: Business Information
         </h2>
@@ -146,16 +156,16 @@ const BusinessInformationForm = ({
 
       <div className="p-4 sm:p-6">
         {/* Application Number Display */}
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+        <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-6">
           <div className="flex items-center">
-            <div className="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3 flex-shrink-0">
+            <div className="bg-teal-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3 flex-shrink-0">
               #
             </div>
             <div className="min-w-0">
               <span className="text-gray-700 font-medium text-sm sm:text-base">
                 Application Number:{" "}
               </span>
-              <span className="text-green-600 font-bold text-base sm:text-lg break-all">
+              <span className="text-teal-600 font-bold text-base sm:text-lg break-all">
                 {applicationNumber}
               </span>
             </div>
@@ -166,7 +176,7 @@ const BusinessInformationForm = ({
           {/* Business Information and Registration */}
           <div className="border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <Building className="w-5 h-5 mr-2 text-green-600" />
+              <Building className="w-5 h-5 mr-2 text-teal-600" />
               Business Information and Registration
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -179,7 +189,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("businessType", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   required
                 >
                   <option value="">Select Business Type</option>
@@ -200,7 +210,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("dtiSecCdaNumber", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter registration number"
                 />
               </div>
@@ -214,7 +224,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("businessName", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter business name"
                   required
                 />
@@ -229,7 +239,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("taxIdNumber", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter TIN"
                   required
                 />
@@ -244,7 +254,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("tradeName", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter trade name or franchise"
                 />
               </div>
@@ -258,7 +268,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("firstName", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter first name"
                   required
                 />
@@ -273,7 +283,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("middleName", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter middle name"
                 />
               </div>
@@ -287,7 +297,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("lastName", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter last name"
                   required
                 />
@@ -302,7 +312,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("extension", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Jr., Sr., III, etc."
                 />
               </div>
@@ -313,7 +323,7 @@ const BusinessInformationForm = ({
                 <select
                   value={formData.sex}
                   onChange={(e) => handleInputChange("sex", e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   required
                 >
                   <option value="">Select Sex</option>
@@ -327,7 +337,7 @@ const BusinessInformationForm = ({
           {/* Contact Information */}
           <div className="border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <User className="w-5 h-5 mr-2 text-green-600" />
+              <User className="w-5 h-5 mr-2 text-teal-600" />
               Contact Information
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -339,7 +349,7 @@ const BusinessInformationForm = ({
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter email address"
                   required
                 />
@@ -354,7 +364,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("telephone", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter telephone number"
                 />
               </div>
@@ -366,7 +376,7 @@ const BusinessInformationForm = ({
                   type="text"
                   value={formData.mobile}
                   onChange={(e) => handleInputChange("mobile", e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter mobile number"
                   required
                 />
@@ -377,7 +387,7 @@ const BusinessInformationForm = ({
           {/* Business Address */}
           <div className="border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <MapPin className="w-5 h-5 mr-2 text-green-600" />
+              <MapPin className="w-5 h-5 mr-2 text-teal-600" />
               Business Address
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -393,7 +403,8 @@ const BusinessInformationForm = ({
                     handleInputChange("province", "");
                     handleInputChange("city", "");
                   }}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  aria-describedby="region-help"
                 >
                   <option value="">Select Region</option>
                   {regionOptions.map((option) => (
@@ -402,12 +413,18 @@ const BusinessInformationForm = ({
                     </option>
                   ))}
                 </select>
+                <p id="region-help" className="mt-1 text-xs text-gray-500">
+                  Choose region to populate provinces.
+                </p>
               </div>
 
               {/* PROVINCE */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Province
+                  Province{" "}
+                  {!formData.region && (
+                    <Lock className="w-4 h-4 inline-block ml-2 text-gray-400" />
+                  )}
                 </label>
                 <select
                   value={formData.province}
@@ -415,59 +432,123 @@ const BusinessInformationForm = ({
                     handleInputChange("province", e.target.value);
                     handleInputChange("city", "");
                   }}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className={`w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base ${
+                    !formData.region ? disabledStyle : ""
+                  }`}
                   disabled={!formData.region}
+                  aria-disabled={!formData.region}
+                  aria-describedby={
+                    !formData.region ? "province-help" : undefined
+                  }
                 >
                   <option value="">Select Province</option>
                   {formData.region &&
-                    provinceOptions[formData.region]?.map((option) => (
+                    (provinceOptions[formData.region] || []).map((option) => (
                       <option key={option} value={option}>
                         {option}
                       </option>
                     ))}
                 </select>
+                {!formData.region ? (
+                  <p
+                    id="province-help"
+                    className="mt-1 text-xs text-gray-500 italic"
+                  >
+                    Select a region to enable provinces.
+                  </p>
+                ) : (
+                  <p className="mt-1 text-xs text-gray-500">Choose province</p>
+                )}
               </div>
 
               {/* CITY */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  City/Municipality
+                  City/Municipality{" "}
+                  {!formData.province && (
+                    <Lock className="w-4 h-4 inline-block ml-2 text-gray-400" />
+                  )}
                 </label>
                 <select
                   value={formData.city}
                   onChange={(e) => handleInputChange("city", e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className={`w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base ${
+                    !formData.province ? disabledStyle : ""
+                  }`}
                   disabled={!formData.province}
+                  aria-disabled={!formData.province}
+                  aria-describedby={
+                    !formData.province ? "city-help" : undefined
+                  }
                 >
                   <option value="">Select City/Municipality</option>
                   {formData.province &&
-                    cityOptions[formData.province]?.map((option) => (
+                    (cityOptions[formData.province] || []).map((option) => (
                       <option key={option} value={option}>
                         {option}
                       </option>
                     ))}
                 </select>
+                {!formData.province ? (
+                  <p
+                    id="city-help"
+                    className="mt-1 text-xs text-gray-500 italic"
+                  >
+                    Select a province to enable cities/municipalities.
+                  </p>
+                ) : (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Choose city/municipality
+                  </p>
+                )}
               </div>
 
               {/* BARANGAY */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Barangay
+                  Barangay{" "}
+                  {!formData.city && (
+                    <Lock className="w-4 h-4 inline-block ml-2 text-gray-400" />
+                  )}
                 </label>
                 <select
                   value={formData.barangay}
                   onChange={(e) =>
                     handleInputChange("barangay", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className={`w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base ${
+                    !formData.city ? disabledStyle : ""
+                  }`}
+                  disabled={!formData.city}
+                  aria-disabled={!formData.city}
+                  aria-describedby={
+                    !formData.city ? "barangay-help" : undefined
+                  }
                 >
                   <option value="">Select Barangay</option>
-                  {barangayOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
+                  {formData.city ? (
+                    barangayOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))
+                  ) : (
+                    // show no options while disabled (prevent confusion)
+                    <option value="" disabled>
+                      — Select city first —
                     </option>
-                  ))}
+                  )}
                 </select>
+                {!formData.city ? (
+                  <p
+                    id="barangay-help"
+                    className="mt-1 text-xs text-gray-500 italic"
+                  >
+                    Select a city/municipality first to choose barangay.
+                  </p>
+                ) : (
+                  <p className="mt-1 text-xs text-gray-500">Choose barangay</p>
+                )}
               </div>
 
               {/* LOCATION */}
@@ -480,7 +561,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("addressLine1", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all h-24 resize-none text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all h-24 resize-none text-sm sm:text-base"
                   placeholder="Enter complete business address/location"
                 />
               </div>
@@ -494,7 +575,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("taxpayerZipCode", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter ZIP code"
                 />
               </div>
@@ -504,7 +585,7 @@ const BusinessInformationForm = ({
           {/* Business Operation */}
           <div className="border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <Briefcase className="w-5 h-5 mr-2 text-green-600" />
+              <Briefcase className="w-5 h-5 mr-2 text-teal-600" />
               Business Operation
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -519,7 +600,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("businessArea", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter area in square meters"
                   required
                 />
@@ -535,7 +616,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("employeesInArea", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter number of employees"
                   required
                 />
@@ -551,7 +632,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("maleEmployees", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter number of male employees"
                   required
                 />
@@ -567,7 +648,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("femaleEmployees", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter number of female employees"
                   required
                 />
@@ -583,7 +664,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("vanDeliveryVehicles", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter 0 if not applicable"
                   required
                 />
@@ -599,7 +680,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("truckDeliveryVehicles", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter 0 if not applicable"
                   required
                 />
@@ -618,7 +699,7 @@ const BusinessInformationForm = ({
                       e.target.value
                     )
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                   placeholder="Enter 0 if not applicable"
                   required
                 />
@@ -626,10 +707,10 @@ const BusinessInformationForm = ({
             </div>
           </div>
 
-          {/* Taxpayer's Address */}
+          {/* Taxpayer's Address (unchanged) */}
           <div className="border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <MapPin className="w-5 h-5 mr-2 text-green-600" />
+              <MapPin className="w-5 h-5 mr-2 text-teal-600" />
               Taxpayer's Address
             </h3>
 
@@ -641,7 +722,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("sameAsBusinessAddress", e.target.checked)
                   }
-                  className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500"
+                  className="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500"
                 />
                 <span className="ml-2 text-sm font-semibold text-gray-700">
                   Same as Business Address
@@ -661,7 +742,7 @@ const BusinessInformationForm = ({
                     onChange={(e) =>
                       handleInputChange("taxpayerRegion", e.target.value)
                     }
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                     placeholder="Enter region"
                   />
                 </div>
@@ -675,7 +756,7 @@ const BusinessInformationForm = ({
                     onChange={(e) =>
                       handleInputChange("taxpayerProvince", e.target.value)
                     }
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                     placeholder="Enter province"
                   />
                 </div>
@@ -689,7 +770,7 @@ const BusinessInformationForm = ({
                     onChange={(e) =>
                       handleInputChange("taxpayerCity", e.target.value)
                     }
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                     placeholder="Enter city/municipality"
                   />
                 </div>
@@ -703,7 +784,7 @@ const BusinessInformationForm = ({
                     onChange={(e) =>
                       handleInputChange("taxpayerBarangay", e.target.value)
                     }
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                     placeholder="Enter barangay"
                   />
                 </div>
@@ -717,7 +798,7 @@ const BusinessInformationForm = ({
                     onChange={(e) =>
                       handleInputChange("taxpayerAddressLine1", e.target.value)
                     }
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                     placeholder="Enter street address"
                   />
                 </div>
@@ -731,14 +812,14 @@ const BusinessInformationForm = ({
                     onChange={(e) =>
                       handleInputChange("taxpayerZipCode", e.target.value)
                     }
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                     placeholder="Enter ZIP code"
                   />
                 </div>
               </div>
             )}
 
-            {/* Property Details */}
+            {/* Property Details & other sections unchanged... */}
             <div className="mt-6 space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-3">
@@ -751,7 +832,7 @@ const BusinessInformationForm = ({
                       name="ownProperty"
                       checked={formData.ownProperty === true}
                       onChange={() => handleInputChange("ownProperty", true)}
-                      className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 focus:ring-green-500"
+                      className="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 focus:ring-teal-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">Yes</span>
                   </label>
@@ -761,7 +842,7 @@ const BusinessInformationForm = ({
                       name="ownProperty"
                       checked={formData.ownProperty === false}
                       onChange={() => handleInputChange("ownProperty", false)}
-                      className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 focus:ring-green-500"
+                      className="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 focus:ring-teal-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">No</span>
                   </label>
@@ -780,7 +861,7 @@ const BusinessInformationForm = ({
                       onChange={(e) =>
                         handleInputChange("lessorName", e.target.value)
                       }
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                       placeholder="Enter lessor/landlord name"
                       required={formData.ownProperty === false}
                     />
@@ -795,7 +876,7 @@ const BusinessInformationForm = ({
                       onChange={(e) =>
                         handleInputChange("monthlyRental", e.target.value)
                       }
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                       placeholder="Enter monthly rental amount"
                     />
                   </div>
@@ -814,7 +895,7 @@ const BusinessInformationForm = ({
                       name="taxIncentives"
                       checked={formData.taxIncentives === true}
                       onChange={() => handleInputChange("taxIncentives", true)}
-                      className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 focus:ring-green-500"
+                      className="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 focus:ring-teal-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">Yes</span>
                   </label>
@@ -824,7 +905,7 @@ const BusinessInformationForm = ({
                       name="taxIncentives"
                       checked={formData.taxIncentives === false}
                       onChange={() => handleInputChange("taxIncentives", false)}
-                      className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 focus:ring-green-500"
+                      className="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 focus:ring-teal-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">No</span>
                   </label>
@@ -833,10 +914,10 @@ const BusinessInformationForm = ({
             </div>
           </div>
 
-          {/* Business Activity */}
+          {/* Business Activity (unchanged) */}
           <div className="border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <FileText className="w-5 h-5 mr-2 text-green-600" />
+              <FileText className="w-5 h-5 mr-2 text-teal-600" />
               Business Activity
             </h3>
 
@@ -862,7 +943,7 @@ const BusinessInformationForm = ({
                         onChange={(e) =>
                           handleInputChange("businessActivity", e.target.value)
                         }
-                        className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 focus:ring-green-500"
+                        className="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 focus:ring-teal-500"
                       />
                       <span className="ml-2 text-sm text-gray-700">
                         {activity}
@@ -881,7 +962,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("lineOfBusiness", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                 >
                   <option value="">Select Line of Business</option>
                   {lineOfBusinessOptions.map((option) => (
@@ -901,7 +982,7 @@ const BusinessInformationForm = ({
                   onChange={(e) =>
                     handleInputChange("productsServices", e.target.value)
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all h-24 resize-none text-sm sm:text-base"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all h-24 resize-none text-sm sm:text-base"
                   placeholder="Describe your products and/or services"
                 />
               </div>
@@ -917,7 +998,7 @@ const BusinessInformationForm = ({
                     onChange={(e) =>
                       handleInputChange("numberOfUnits", e.target.value)
                     }
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                     placeholder="Enter number of units"
                   />
                 </div>
@@ -932,7 +1013,7 @@ const BusinessInformationForm = ({
                     onChange={(e) =>
                       handleInputChange("totalCapitalization", e.target.value)
                     }
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all text-sm sm:text-base"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all text-sm sm:text-base"
                     placeholder="Enter total capitalization"
                     required
                   />

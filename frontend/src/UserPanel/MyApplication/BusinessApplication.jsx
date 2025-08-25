@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FileText,
   CheckCircle,
@@ -28,6 +28,8 @@ import imgQuarterly from "../../assets/authentication3.jpg";
 import imgDelinquent from "../../assets/authentication4.jpg";
 import imgChangeRequest from "../../assets/RANKINGsystemicon.jpg";
 import imgRetirement from "../../assets/abstract-entrypage-bg.png";
+
+const MOBILE_ICON_SIZE = 44; // px, used for collision/clamping
 
 const BusinessApplication = () => {
   const [step, setStep] = useState(1);
@@ -85,7 +87,162 @@ const BusinessApplication = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+  // New: control visibility of the mobile floating footer
+  const [showMobileFooter, setShowMobileFooter] = useState(true);
+
+  // Mobile draggable icon position (px from left/top)
+  const [mobileIconPos, setMobileIconPos] = useState(null);
+  const draggingRef = useRef(false);
+  const dragStateRef = useRef(null);
+
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
+
+  // load/save mobile footer visibility to localStorage so user's preference persists
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("businessAppMobileFooterVisible");
+      if (saved !== null) setShowMobileFooter(JSON.parse(saved));
+    } catch (e) {
+      // ignore storage errors
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "businessAppMobileFooterVisible",
+        JSON.stringify(showMobileFooter)
+      );
+    } catch (e) {
+      // ignore storage errors
+    }
+  }, [showMobileFooter]);
+
+  // load/save mobile icon pos
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("businessAppMobileIconPos");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // ensure valid numbers
+        if (typeof parsed.x === "number" && typeof parsed.y === "number") {
+          setMobileIconPos(parsed);
+          return;
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    // default position: bottom-right with some padding (defer to client size)
+    const setDefault = () => {
+      const padding = 16;
+      const defaultX = Math.max(
+        window.innerWidth - MOBILE_ICON_SIZE - padding,
+        padding
+      );
+      const defaultY = Math.max(
+        window.innerHeight - MOBILE_ICON_SIZE - (padding + 24),
+        padding
+      );
+      setMobileIconPos({ x: defaultX, y: defaultY });
+    };
+
+    if (typeof window !== "undefined") setDefault();
+  }, []);
+
+  // clamp helper so icon never leaves viewport
+  const clampToViewport = (x, y) => {
+    const padding = 8;
+    const maxX = Math.max(
+      window.innerWidth - MOBILE_ICON_SIZE - padding,
+      padding
+    );
+    const maxY = Math.max(
+      window.innerHeight - MOBILE_ICON_SIZE - padding,
+      padding
+    );
+    const nx = Math.min(Math.max(x, padding), maxX);
+    const ny = Math.min(Math.max(y, padding), maxY);
+    return { x: nx, y: ny };
+  };
+
+  // keep icon inside viewport on resize
+  useEffect(() => {
+    const onResize = () => {
+      if (!mobileIconPos) return;
+      const clamped = clampToViewport(mobileIconPos.x, mobileIconPos.y);
+      if (clamped.x !== mobileIconPos.x || clamped.y !== mobileIconPos.y) {
+        setMobileIconPos(clamped);
+        try {
+          localStorage.setItem(
+            "businessAppMobileIconPos",
+            JSON.stringify(clamped)
+          );
+        } catch (e) {}
+      }
+    };
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [mobileIconPos]);
+
+  // dragging handlers using pointer events
+  const onPointerDownIcon = (e) => {
+    // only left click / touch
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (!mobileIconPos) return;
+    e.currentTarget.setPointerCapture &&
+      e.currentTarget.setPointerCapture(e.pointerId);
+    draggingRef.current = true;
+    dragStateRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      origX: mobileIconPos.x,
+      origY: mobileIconPos.y,
+      moved: false,
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+  };
+
+  const onPointerMove = (e) => {
+    if (!dragStateRef.current) return;
+    const dx = e.clientX - dragStateRef.current.startX;
+    const dy = e.clientY - dragStateRef.current.startY;
+    if (!dragStateRef.current.moved) {
+      const dist = Math.hypot(dx, dy);
+      if (dist > 4) dragStateRef.current.moved = true;
+    }
+    const newX = dragStateRef.current.origX + dx;
+    const newY = dragStateRef.current.origY + dy;
+    const clamped = clampToViewport(newX, newY);
+    setMobileIconPos(clamped);
+  };
+
+  const onPointerUp = (e) => {
+    window.removeEventListener("pointermove", onPointerMove);
+    window.removeEventListener("pointerup", onPointerUp);
+
+    const moved = dragStateRef.current?.moved;
+    draggingRef.current = false;
+    dragStateRef.current = null;
+
+    // save position
+    try {
+      if (mobileIconPos)
+        localStorage.setItem(
+          "businessAppMobileIconPos",
+          JSON.stringify(mobileIconPos)
+        );
+    } catch (err) {}
+
+    // if it was a tap (no meaningful move) treat it as click to open footer
+    if (!moved) {
+      setShowMobileFooter(true);
+    }
+  };
 
   // Sidebar sample data
   const recentActivities = [
@@ -261,7 +418,7 @@ const BusinessApplication = () => {
   // ✅ Success Modal Component
   const SuccessModal = () =>
     showSuccessModal && (
-      <div className="fixed inset-0 bg-white bg-opacity-20 backdrop-blur-md flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-white bg-opacity-20 backdrop-blur-md flex items-center justify-center z-50 p-4 ">
         <div
           className="bg-white rounded-2xl p-8 max-w-md w-full text-center"
           style={{ animation: "scaleIn 0.3s ease-out" }}
@@ -325,7 +482,7 @@ const BusinessApplication = () => {
   }, []);
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex h-screen bg-white ">
       {/* Left Sidebar */}
       <SidebarCitizen isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
 
@@ -448,76 +605,125 @@ const BusinessApplication = () => {
 
             {/* FOOTER / NAV CONTROLS */}
             <div className="mt-4 border-t pt-4">
-              {/* Mobile Layout - Stacked with bottom safe area */}
-              <div className="flex flex-col gap-4 md:hidden pb-20">
-                {/* Action buttons on mobile - full width */}
-                <div className="flex flex-col gap-2">
-                  {/* On step 1 show Continue (disabled until transactionType) */}
-                  {step === 1 && (
-                    <button
-                      type="button"
-                      onClick={nextStep}
-                      disabled={!transactionType}
-                      className={`w-full px-6 py-3 rounded-lg font-semibold ${
-                        transactionType
-                          ? "bg-teal-600 text-white hover:bg-teal-700"
-                          : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      }`}
+              {/* Mobile Floating Footer - small, centered & hideable */}
+              {/* When hidden we show a tiny draggable show-button; when visible we show full bar */}
+              <div className="md:hidden">
+                {/* draggable show-button (visible when footer is hidden) */}
+                {!showMobileFooter && mobileIconPos && (
+                  <button
+                    aria-label="Show navigation"
+                    onPointerDown={onPointerDownIcon}
+                    className="z-50 rounded-full bg-teal-600 text-white flex items-center justify-center shadow-lg"
+                    style={{
+                      position: "fixed",
+                      left: `${mobileIconPos.x}px`,
+                      top: `${mobileIconPos.y}px`,
+                      width: MOBILE_ICON_SIZE,
+                      height: MOBILE_ICON_SIZE,
+                      touchAction: "none",
+                    }}
+                  >
+                    {/* simple chevron-up */}
+                    <svg
+                      className="w-5 h-5"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
                     >
-                      Continue →
-                    </button>
-                  )}
+                      <path
+                        d="M5 12l5-5 5 5"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                )}
 
-                  {/* On steps 2 & 3 show Continue to next step */}
-                  {(step === 2 || step === 3) && (
-                    <button
-                      type="button"
-                      onClick={nextStep}
-                      className="w-full px-6 py-3 rounded-lg font-semibold bg-teal-600 text-white hover:bg-teal-700"
-                    >
-                      Continue →
-                    </button>
-                  )}
-                </div>
+                {/* full floating footer */}
+                {showMobileFooter && (
+                  <div
+                    className="fixed left-1/2 bottom-15 transform -translate-x-1/2 z-100 w-[calc(100%-2rem)] max-w-xl"
+                    style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+                  >
+                    <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl shadow-lg p-2 flex items-center justify-between gap-2">
+                      {/* Left side: Back + Start Over (compact) */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={prevStep}
+                          disabled={step === 1}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold ${
+                            step === 1
+                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          ←
+                        </button>
 
-                {/* Navigation buttons on mobile - conditional based on step */}
-                {step === 4 ? (
-                  // Step 4: Only Back button
-                  <div className="flex">
-                    <button
-                      type="button"
-                      onClick={prevStep}
-                      className="w-full px-4 py-2 rounded-lg font-semibold bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                    >
-                      ← Back
-                    </button>
-                  </div>
-                ) : (
-                  // Other steps: Both Back and Start Over
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={prevStep}
-                      disabled={step === 1}
-                      className={`flex-1 px-4 py-2 rounded-lg font-semibold ${
-                        step === 1
-                          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      ← Back
-                    </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setStep(1);
+                            setTransactionType("");
+                          }}
+                          className="px-3 py-2 rounded-md text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                        >
+                          Start Over
+                        </button>
+                      </div>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStep(1);
-                        setTransactionType("");
-                      }}
-                      className="flex-1 px-4 py-2 rounded-lg font-semibold bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                    >
-                      Start Over
-                    </button>
+                      {/* Right side: Continue (compact) + hide control */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center">
+                          {step === 1 && (
+                            <button
+                              type="button"
+                              onClick={nextStep}
+                              disabled={!transactionType}
+                              className={`px-4 py-2 rounded-md text-sm font-semibold ${
+                                transactionType
+                                  ? "bg-teal-600 text-white hover:bg-teal-700"
+                                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                              }`}
+                            >
+                              Continue →
+                            </button>
+                          )}
+
+                          {(step === 2 || step === 3) && (
+                            <button
+                              type="button"
+                              onClick={nextStep}
+                              className="px-4 py-2 rounded-md text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700"
+                            >
+                              Continue →
+                            </button>
+                          )}
+
+                          {step === 4 && (
+                            <button
+                              type="button"
+                              onClick={prevStep}
+                              className="px-4 py-2 rounded-md text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 ml-2"
+                            >
+                              ← Back
+                            </button>
+                          )}
+                        </div>
+
+                        {/* hide button */}
+                        <button
+                          aria-label="Hide navigation"
+                          type="button"
+                          onClick={() => setShowMobileFooter(false)}
+                          className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm text-sm text-gray-600"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

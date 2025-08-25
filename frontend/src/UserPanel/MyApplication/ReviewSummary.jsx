@@ -28,8 +28,8 @@ const ReviewSummary = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200">
-      <div className="bg-green-600 text-white p-4 sm:p-6 rounded-t-xl">
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 mb-20 sm:mb-0">
+      <div className="bg-teal-600 text-white p-4 sm:p-6 rounded-t-xl">
         <h2 className="text-xl sm:text-2xl font-semibold mb-2">
           Step 4: Review & Summary
         </h2>
@@ -40,16 +40,16 @@ const ReviewSummary = ({
 
       <div className="p-4 sm:p-6">
         {/* Application Number Display */}
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+        <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-6">
           <div className="flex items-center">
-            <div className="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3 flex-shrink-0">
+            <div className="bg-teal-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3 flex-shrink-0">
               #
             </div>
             <div className="min-w-0">
               <span className="text-gray-700 font-medium text-sm sm:text-base">
                 Application Number:{" "}
               </span>
-              <span className="text-green-600 font-bold text-base sm:text-lg break-all">
+              <span className="text-teal-600 font-bold text-base sm:text-lg break-all">
                 {applicationNumber}
               </span>
             </div>
@@ -60,7 +60,7 @@ const ReviewSummary = ({
           {/* Business Information Summary */}
           <div className="border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <Building className="w-5 h-5 mr-2 text-green-600" />
+              <Building className="w-5 h-5 mr-2 text-teal-600" />
               Business Information
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -94,7 +94,7 @@ const ReviewSummary = ({
           {/* Owner Information Summary */}
           <div className="border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <User className="w-5 h-5 mr-2 text-green-600" />
+              <User className="w-5 h-5 mr-2 text-teal-600" />
               Owner Information
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -126,7 +126,7 @@ const ReviewSummary = ({
           {/* Business Address Summary */}
           <div className="border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <MapPin className="w-5 h-5 mr-2 text-green-600" />
+              <MapPin className="w-5 h-5 mr-2 text-teal-600" />
               Business Address
             </h3>
             <div className="text-sm">
@@ -149,7 +149,7 @@ const ReviewSummary = ({
           {/* Business Operation Summary */}
           <div className="border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <Briefcase className="w-5 h-5 mr-2 text-green-600" />
+              <Briefcase className="w-5 h-5 mr-2 text-teal-600" />
               Business Operation
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -189,7 +189,7 @@ const ReviewSummary = ({
           {/* Property Details Summary */}
           <div className="border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <Building className="w-5 h-5 mr-2 text-green-600" />
+              <Building className="w-5 h-5 mr-2 text-teal-600" />
               Property Details
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -227,7 +227,7 @@ const ReviewSummary = ({
           {/* Business Activity Summary */}
           <div className="border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <FileText className="w-5 h-5 mr-2 text-green-600" />
+              <FileText className="w-5 h-5 mr-2 text-teal-600" />
               Business Activity
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -253,7 +253,7 @@ const ReviewSummary = ({
           {/* Document Upload Summary */}
           <div className="border border-gray-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <FileText className="w-5 h-5 mr-2 text-green-600" />
+              <FileText className="w-5 h-5 mr-2 text-teal-600" />
               Documents Uploaded
             </h3>
             <div className="flex items-center justify-between">
@@ -271,7 +271,7 @@ const ReviewSummary = ({
                 <CheckCircle2
                   className={`w-6 h-6 ${
                     getUploadedDocuments() > 0
-                      ? "text-green-600"
+                      ? "text-teal-600"
                       : "text-gray-400"
                   }`}
                 />
@@ -291,7 +291,7 @@ const ReviewSummary = ({
               id="declaration"
               checked={declarationAccepted}
               onChange={(e) => setDeclarationAccepted(e.target.checked)}
-              className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 mt-1"
+              className="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 mt-1"
             />
             <label
               htmlFor="declaration"
@@ -316,7 +316,7 @@ const ReviewSummary = ({
             disabled={!declarationAccepted}
             className={`px-12 py-4 rounded-lg font-bold text-lg transition-all duration-200 ${
               declarationAccepted
-                ? "bg-green-600 text-white hover:bg-green-700 shadow-lg transform hover:scale-105"
+                ? "bg-teal-600 text-white hover:bg-teal-700 shadow-lg transform hover:scale-105"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
           >

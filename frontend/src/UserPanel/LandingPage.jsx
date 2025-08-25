@@ -174,16 +174,6 @@ const LandingPage = () => {
 
         {/* Dashboard content */}
         <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 bg-gradient-to-br from-teal-50 to-emerald-100">
-          {/* Welcome Header */}
-          <div className="mb-4 sm:mb-6">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
-              Welcome, {getDisplayName()}
-            </h1>
-            <p className="text-sm sm:text-base text-gray-600 mt-1">
-              Here's your current business permit activities and updates.
-            </p>
-          </div>
-
           {/* Stats Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
             <div className="bg-white rounded-lg lg:rounded-xl p-3 sm:p-4 lg:p-6 shadow-sm">
