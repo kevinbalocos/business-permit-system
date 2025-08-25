@@ -118,6 +118,24 @@ const BusinessApplication = () => {
     }
   }, [showMobileFooter]);
 
+  // Helper to compute a default icon position (bottom-right)
+  const getDefaultIconPos = () => {
+    const padding = 16;
+    const defaultX = Math.max(
+      (typeof window !== "undefined" ? window.innerWidth : 360) -
+        MOBILE_ICON_SIZE -
+        padding,
+      padding
+    );
+    const defaultY = Math.max(
+      (typeof window !== "undefined" ? window.innerHeight : 760) -
+        MOBILE_ICON_SIZE -
+        (padding + 24),
+      padding
+    );
+    return { x: defaultX, y: defaultY };
+  };
+
   // load/save mobile icon pos
   useEffect(() => {
     try {
@@ -136,16 +154,7 @@ const BusinessApplication = () => {
 
     // default position: bottom-right with some padding (defer to client size)
     const setDefault = () => {
-      const padding = 16;
-      const defaultX = Math.max(
-        window.innerWidth - MOBILE_ICON_SIZE - padding,
-        padding
-      );
-      const defaultY = Math.max(
-        window.innerHeight - MOBILE_ICON_SIZE - (padding + 24),
-        padding
-      );
-      setMobileIconPos({ x: defaultX, y: defaultY });
+      setMobileIconPos(getDefaultIconPos());
     };
 
     if (typeof window !== "undefined") setDefault();
@@ -155,11 +164,15 @@ const BusinessApplication = () => {
   const clampToViewport = (x, y) => {
     const padding = 8;
     const maxX = Math.max(
-      window.innerWidth - MOBILE_ICON_SIZE - padding,
+      (typeof window !== "undefined" ? window.innerWidth : 360) -
+        MOBILE_ICON_SIZE -
+        padding,
       padding
     );
     const maxY = Math.max(
-      window.innerHeight - MOBILE_ICON_SIZE - padding,
+      (typeof window !== "undefined" ? window.innerHeight : 760) -
+        MOBILE_ICON_SIZE -
+        padding,
       padding
     );
     const nx = Math.min(Math.max(x, padding), maxX);
@@ -613,6 +626,11 @@ const BusinessApplication = () => {
                   <button
                     aria-label="Show navigation"
                     onPointerDown={onPointerDownIcon}
+                    onClick={() => {
+                      // Normal click fallback: ensure we have a position and show footer
+                      if (!mobileIconPos) setMobileIconPos(getDefaultIconPos());
+                      setShowMobileFooter(true);
+                    }}
                     className="z-50 rounded-full bg-teal-600 text-white flex items-center justify-center shadow-lg"
                     style={{
                       position: "fixed",
@@ -717,7 +735,13 @@ const BusinessApplication = () => {
                         <button
                           aria-label="Hide navigation"
                           type="button"
-                          onClick={() => setShowMobileFooter(false)}
+                          onClick={() => {
+                            // ensure we have an icon pos so the show-button can render
+                            if (!mobileIconPos) {
+                              setMobileIconPos(getDefaultIconPos());
+                            }
+                            setShowMobileFooter(false);
+                          }}
                           className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm text-sm text-gray-600"
                         >
                           ×
