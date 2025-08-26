@@ -180,7 +180,8 @@ const LandingPage = () => {
               <div className="flex items-center justify-between mb-2 sm:mb-4">
                 <div>
                   <p className="text-xs sm:text-sm text-gray-600">
-                    Total Applications
+                    Total Applicat
+                    ions
                   </p>
                   <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
                     12
