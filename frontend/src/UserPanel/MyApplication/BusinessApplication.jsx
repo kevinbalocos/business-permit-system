@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useMemo,
-  useCallback,
-} from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FileText,
   CheckCircle,
@@ -318,8 +312,7 @@ const BusinessApplication = () => {
 
   const generateApplicationNumber = () => {
     setApplicationNumber(`APP-${Date.now().toString().slice(-6)}`);
-    setStep(2);
-  }, []);
+  };
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -409,9 +402,6 @@ const BusinessApplication = () => {
 
   const handleSubmit = async () => {
     try {
-      // hide nav controls immediately when submit starts
-      setHideNavControls(true);
-      setShowMobileFooter(false);
       setIsSubmitting(true);
 
       const formDataToSend = new FormData();
@@ -460,19 +450,12 @@ const BusinessApplication = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // keep nav controls hidden; show success modal
         setShowSuccessModal(true);
       } else {
-        // revert nav visibility so user can continue
-        setHideNavControls(false);
-        setShowMobileFooter(true);
         showErrorToast(data.message || "Submission failed. Please try again.");
       }
     } catch (error) {
       console.error("Submission failed:", error);
-      // revert nav visibility so user can continue
-      setHideNavControls(false);
-      setShowMobileFooter(true);
       showErrorToast(
         "Server error. Please check your connection and try again."
       );
@@ -565,15 +548,7 @@ const BusinessApplication = () => {
                       return (
                         <div
                           key={t.id}
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => handleSelectTransaction(t.id)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              handleSelectTransaction(t.id);
-                            }
-                          }}
+                          onClick={() => setTransactionType(t.id)}
                           className={`p-4 border rounded-lg cursor-pointer transition transform hover:scale-[1.02] ${
                             transactionType === t.id
                               ? "border-teal-600 bg-teal-50"
@@ -769,17 +744,17 @@ const BusinessApplication = () => {
                           ←
                         </button>
 
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setStep(1);
-                                setTransactionType("");
-                              }}
-                              className="px-3 py-2 rounded-md text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
-                            >
-                              Start Over
-                            </button>
-                          </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setStep(1);
+                            setTransactionType("");
+                          }}
+                          className="px-3 py-2 rounded-md text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                        >
+                          Start Over
+                        </button>
+                      </div>
 
                       <div className="flex items-center gap-2">
                         <div className="flex items-center">
@@ -849,17 +824,17 @@ const BusinessApplication = () => {
                     ← Back
                   </button>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStep(1);
-                        setTransactionType("");
-                      }}
-                      className="px-4 py-2 rounded-lg font-semibold bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                    >
-                      Start Over
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep(1);
+                      setTransactionType("");
+                    }}
+                    className="px-4 py-2 rounded-lg font-semibold bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    Start Over
+                  </button>
+                </div>
 
                 <div className="flex items-center gap-3">
                   {step === 1 && (
