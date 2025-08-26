@@ -5,6 +5,8 @@ import {
   AlertCircle,
   Building,
   User,
+  CreditCard,
+  Calculator,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -20,6 +22,9 @@ import RetirementForm from "./RetirementForm";
 import DelinquentForm from "./DelinquentForm";
 import DocumentUpload from "./DocumentUpload";
 import ReviewSummary from "./ReviewSummary";
+import AcceptTerms from "./AcceptTerms";
+import Assessment from "./Assessment"; // New component
+import PaymentMethod from "./PaymentMethod"; // New component
 
 // ✅ Import images
 import imgNew from "../../assets/authentication.jpg";
@@ -29,7 +34,7 @@ import imgDelinquent from "../../assets/authentication4.jpg";
 import imgChangeRequest from "../../assets/RANKINGsystemicon.jpg";
 import imgRetirement from "../../assets/abstract-entrypage-bg.png";
 
-const MOBILE_ICON_SIZE = 44; // px, used for collision/clamping
+const MOBILE_ICON_SIZE = 44;
 
 const BusinessApplication = () => {
   const [step, setStep] = useState(1);
@@ -80,31 +85,27 @@ const BusinessApplication = () => {
   });
 
   const [documents, setDocuments] = useState({});
+  const [assessmentData, setAssessmentData] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentDetails, setPaymentDetails] = useState({});
   const [isCollapsed, setIsCollapsed] = useState(false);
   const navigate = useNavigate();
 
-  // ✅ New state for modern submit handler
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-  // New: control visibility of the mobile floating footer
   const [showMobileFooter, setShowMobileFooter] = useState(true);
-
-  // Mobile draggable icon position (px from left/top)
   const [mobileIconPos, setMobileIconPos] = useState(null);
   const draggingRef = useRef(false);
   const dragStateRef = useRef(null);
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
-  // load/save mobile footer visibility to localStorage so user's preference persists
+  // Mobile footer and icon position logic (same as before)
   useEffect(() => {
     try {
       const saved = localStorage.getItem("businessAppMobileFooterVisible");
       if (saved !== null) setShowMobileFooter(JSON.parse(saved));
-    } catch (e) {
-      // ignore storage errors
-    }
+    } catch (e) {}
   }, []);
 
   useEffect(() => {
@@ -113,12 +114,9 @@ const BusinessApplication = () => {
         "businessAppMobileFooterVisible",
         JSON.stringify(showMobileFooter)
       );
-    } catch (e) {
-      // ignore storage errors
-    }
+    } catch (e) {}
   }, [showMobileFooter]);
 
-  // Helper to compute a default icon position (bottom-right)
   const getDefaultIconPos = () => {
     const padding = 16;
     const defaultX = Math.max(
@@ -136,23 +134,18 @@ const BusinessApplication = () => {
     return { x: defaultX, y: defaultY };
   };
 
-  // load/save mobile icon pos
   useEffect(() => {
     try {
       const saved = localStorage.getItem("businessAppMobileIconPos");
       if (saved) {
         const parsed = JSON.parse(saved);
-        // ensure valid numbers
         if (typeof parsed.x === "number" && typeof parsed.y === "number") {
           setMobileIconPos(parsed);
           return;
         }
       }
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) {}
 
-    // default position: bottom-right with some padding (defer to client size)
     const setDefault = () => {
       setMobileIconPos(getDefaultIconPos());
     };
@@ -160,7 +153,6 @@ const BusinessApplication = () => {
     if (typeof window !== "undefined") setDefault();
   }, []);
 
-  // clamp helper so icon never leaves viewport
   const clampToViewport = (x, y) => {
     const padding = 8;
     const maxX = Math.max(
@@ -180,7 +172,6 @@ const BusinessApplication = () => {
     return { x: nx, y: ny };
   };
 
-  // keep icon inside viewport on resize
   useEffect(() => {
     const onResize = () => {
       if (!mobileIconPos) return;
@@ -200,9 +191,8 @@ const BusinessApplication = () => {
     return () => window.removeEventListener("resize", onResize);
   }, [mobileIconPos]);
 
-  // dragging handlers using pointer events
+  // Drag handlers (same as before)
   const onPointerDownIcon = (e) => {
-    // only left click / touch
     if (e.pointerType === "mouse" && e.button !== 0) return;
     if (!mobileIconPos) return;
     e.currentTarget.setPointerCapture &&
@@ -242,7 +232,6 @@ const BusinessApplication = () => {
     draggingRef.current = false;
     dragStateRef.current = null;
 
-    // save position
     try {
       if (mobileIconPos)
         localStorage.setItem(
@@ -251,13 +240,12 @@ const BusinessApplication = () => {
         );
     } catch (err) {}
 
-    // if it was a tap (no meaningful move) treat it as click to open footer
     if (!moved) {
       setShowMobileFooter(true);
     }
   };
 
-  // Sidebar sample data
+  // Sidebar data
   const recentActivities = [
     {
       type: "application",
@@ -277,7 +265,6 @@ const BusinessApplication = () => {
   ];
   const reminders = ["Submit quarterly report", "Renew before Dec 31"];
 
-  // ✅ Assign specific images per transaction type
   const transactionTypes = [
     {
       id: "NEW",
@@ -335,16 +322,48 @@ const BusinessApplication = () => {
     setDocuments((prev) => ({ ...prev, [field]: file }));
   };
 
-  // safer navigation helpers
-  const nextStep = () => {
-    if (step === 1) generateApplicationNumber();
-    if (step < 4) setStep((s) => s + 1);
+  const handleAssessmentGenerated = (assessment) => {
+    setAssessmentData(assessment);
   };
+
+  const handlePaymentMethodSelect = (method, details) => {
+    setPaymentMethod(method);
+    setPaymentDetails(details);
+  };
+
+  // ✅ Updated navigation helpers for new flow
+  const getMaxSteps = () => {
+    if (transactionType === "NEW") {
+      return 7; // 1:Select, 2:Terms, 3:Form+Docs, 4:Review, 5:Assessment, 6:Payment, 7:Success
+    }
+    return 5; // Other types: 1:Select, 2:Terms, 3:Form, 4:Documents, 5:Review
+  };
+
+  const nextStep = () => {
+    const maxSteps = getMaxSteps();
+    if (step === 1) {
+      setStep(2); // Go to AcceptTerms
+    } else if (step === 2) {
+      generateApplicationNumber();
+      setStep(3); // Go to form
+    } else if (step < maxSteps) {
+      setStep((s) => s + 1);
+    }
+  };
+
   const prevStep = () => {
     if (step > 1) setStep((s) => s - 1);
   };
 
-  // ✅ Modern error toast function
+  const handleAcceptTerms = () => {
+    nextStep();
+  };
+
+  const handleDeclineTerms = () => {
+    setStep(1);
+    setTransactionType("");
+  };
+
   const showErrorToast = (message) => {
     const toast = document.createElement("div");
     toast.className =
@@ -359,7 +378,6 @@ const BusinessApplication = () => {
       </div>
     `;
 
-    // Add slide-in animation style
     const style = document.createElement("style");
     style.textContent = `
       @keyframes slideIn {
@@ -377,36 +395,54 @@ const BusinessApplication = () => {
     }, 5000);
   };
 
-  // ✅ Handle navigation to dashboard
   const handleGoToDashboard = () => {
     setShowSuccessModal(false);
-    // Smooth navigation without page reload
     navigate("/user-dashboard", { replace: true });
   };
 
-  // ✅ Updated modern handleSubmit
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
 
       const formDataToSend = new FormData();
 
-      // Add all regular fields
+      // Append all form fields
       Object.entries(formData).forEach(([key, value]) => {
         formDataToSend.append(key, value);
       });
 
-      // Add uploaded documents
+      // Append uploaded documents if any
       if (documents && Object.keys(documents).length > 0) {
         Object.values(documents).forEach((file) => {
           formDataToSend.append("documents", file);
         });
       }
 
+      // Add assessment and payment data
+      if (assessmentData) {
+        formDataToSend.append("assessment", JSON.stringify(assessmentData));
+      }
+      if (paymentMethod) {
+        formDataToSend.append("paymentMethod", paymentMethod);
+        formDataToSend.append("paymentDetails", JSON.stringify(paymentDetails));
+      }
+
+      // Get JWT token from localStorage
+      const token = localStorage.getItem("token");
+      if (!token) {
+        showErrorToast("You are not logged in. Please log in first.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Send request with Authorization header
       const response = await fetch(
         "http://localhost:5000/api/business/submit",
         {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`, // ✅ Add token here
+          },
           body: formDataToSend,
         }
       );
@@ -428,7 +464,6 @@ const BusinessApplication = () => {
     }
   };
 
-  // ✅ Success Modal Component
   const SuccessModal = () =>
     showSuccessModal && (
       <div className="fixed inset-0 bg-white bg-opacity-20 backdrop-blur-md flex items-center justify-center z-50 p-4 ">
@@ -436,7 +471,6 @@ const BusinessApplication = () => {
           className="bg-white rounded-2xl p-8 max-w-md w-full text-center"
           style={{ animation: "scaleIn 0.3s ease-out" }}
         >
-          {/* Success Icon */}
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
               className="w-8 h-8 text-green-600"
@@ -453,12 +487,10 @@ const BusinessApplication = () => {
             </svg>
           </div>
 
-          {/* Title */}
           <h3 className="text-2xl font-bold text-gray-900 mb-2">
             Application Submitted!
           </h3>
 
-          {/* Message */}
           <p className="text-gray-600 mb-2">
             Your business application has been successfully submitted.
           </p>
@@ -469,7 +501,6 @@ const BusinessApplication = () => {
             </span>
           </p>
 
-          {/* Action Button */}
           <button
             onClick={handleGoToDashboard}
             className="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
@@ -480,7 +511,6 @@ const BusinessApplication = () => {
       </div>
     );
 
-  // Add scale-in animation style for modal
   React.useEffect(() => {
     const style = document.createElement("style");
     style.textContent = `
@@ -496,25 +526,21 @@ const BusinessApplication = () => {
 
   return (
     <div className="flex h-screen bg-white ">
-      {/* Left Sidebar */}
       <SidebarCitizen isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
 
-      {/* Main + Right */}
       <div className="flex flex-1 flex-col">
-        {/* Navbar */}
         <div className="shrink-0">
           <NavbarCitizen toggleSidebar={toggleSidebar} />
         </div>
 
-        {/* Content area fills remaining height */}
         <div className="flex flex-1 overflow-hidden">
-          {/* Main Content */}
           <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 flex flex-col mb-23 sm:mb-0">
             <div className="flex-1">
+              {/* Step 1: Select Transaction Type */}
               {step === 1 && (
                 <div className="bg-white p-4 flex flex-col min-h-full">
                   <h2 className="text-xl font-bold mb-4">
-                    Step 1: Select Transaction Type
+                    Select Transaction Type
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
                     {transactionTypes.map((t) => {
@@ -529,7 +555,6 @@ const BusinessApplication = () => {
                               : "border-gray-200"
                           }`}
                         >
-                          {/* ✅ Unique Image */}
                           <div className="mb-3">
                             <img
                               src={t.image}
@@ -552,16 +577,32 @@ const BusinessApplication = () => {
                 </div>
               )}
 
-              {/* ✅ Render different form based on selection */}
-              {step === 2 && transactionType === "NEW" && (
-                <BusinessInformationForm
-                  formData={formData}
-                  handleInputChange={handleInputChange}
-                  applicationNumber={applicationNumber}
+              {/* Step 2: Accept Terms */}
+              {step === 2 && (
+                <AcceptTerms
+                  onAccept={handleAcceptTerms}
+                  onDecline={handleDeclineTerms}
+                  transactionType={transactionType}
                 />
               )}
 
-              {step === 2 && transactionType === "RENEWAL" && (
+              {/* Step 3: Forms */}
+              {step === 3 && transactionType === "NEW" && (
+                <div className="space-y-8">
+                  <BusinessInformationForm
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    applicationNumber={applicationNumber}
+                  />
+                  <DocumentUpload
+                    applicationNumber={applicationNumber}
+                    documents={documents}
+                    handleFileUpload={handleFileUpload}
+                  />
+                </div>
+              )}
+
+              {step === 3 && transactionType === "RENEWAL" && (
                 <RenewalForm
                   formData={formData}
                   handleInputChange={handleInputChange}
@@ -569,35 +610,36 @@ const BusinessApplication = () => {
                 />
               )}
 
-              {step === 2 && transactionType === "QUARTERLY" && (
+              {step === 3 && transactionType === "QUARTERLY" && (
                 <QuarterlyReportForm
                   formData={formData}
                   handleInputChange={handleInputChange}
                 />
               )}
 
-              {step === 2 && transactionType === "DELINQUENT" && (
+              {step === 3 && transactionType === "DELINQUENT" && (
                 <DelinquentForm
                   formData={formData}
                   handleInputChange={handleInputChange}
                 />
               )}
 
-              {step === 2 && transactionType === "CHANGE_REQUEST" && (
+              {step === 3 && transactionType === "CHANGE_REQUEST" && (
                 <ChangeRequestForm
                   formData={formData}
                   handleInputChange={handleInputChange}
                 />
               )}
 
-              {step === 2 && transactionType === "RETIREMENT" && (
+              {step === 3 && transactionType === "RETIREMENT" && (
                 <RetirementForm
                   formData={formData}
                   handleInputChange={handleInputChange}
                 />
               )}
 
-              {step === 3 && (
+              {/* Step 4: Document Upload (for non-NEW types) or Review (for NEW) */}
+              {step === 4 && transactionType !== "NEW" && (
                 <DocumentUpload
                   applicationNumber={applicationNumber}
                   documents={documents}
@@ -605,7 +647,16 @@ const BusinessApplication = () => {
                 />
               )}
 
-              {step === 4 && (
+              {step === 4 && transactionType === "NEW" && (
+                <ReviewSummary
+                  applicationNumber={applicationNumber}
+                  formData={formData}
+                  documents={documents}
+                />
+              )}
+
+              {/* Step 5: Review Summary (for non-NEW) or Assessment (for NEW) */}
+              {step === 5 && transactionType !== "NEW" && (
                 <ReviewSummary
                   applicationNumber={applicationNumber}
                   formData={formData}
@@ -614,20 +665,36 @@ const BusinessApplication = () => {
                   isSubmitting={isSubmitting}
                 />
               )}
+
+              {step === 5 && transactionType === "NEW" && (
+                <Assessment
+                  applicationNumber={applicationNumber}
+                  formData={formData}
+                  onAssessmentGenerated={handleAssessmentGenerated}
+                />
+              )}
+
+              {/* Step 6: Payment Method (NEW only) */}
+              {step === 6 && transactionType === "NEW" && (
+                <PaymentMethod
+                  applicationNumber={applicationNumber}
+                  assessmentData={assessmentData}
+                  onPaymentMethodSelect={handlePaymentMethodSelect}
+                  onSubmit={handleSubmit}
+                  isSubmitting={isSubmitting}
+                />
+              )}
             </div>
 
-            {/* FOOTER / NAV CONTROLS */}
+            {/* Navigation Footer */}
             <div className="mt-4 border-t pt-4">
-              {/* Mobile Floating Footer - small, centered & hideable */}
-              {/* When hidden we show a tiny draggable show-button; when visible we show full bar */}
+              {/* Mobile Footer */}
               <div className="md:hidden">
-                {/* draggable show-button (visible when footer is hidden) */}
                 {!showMobileFooter && mobileIconPos && (
                   <button
                     aria-label="Show navigation"
                     onPointerDown={onPointerDownIcon}
                     onClick={() => {
-                      // Normal click fallback: ensure we have a position and show footer
                       if (!mobileIconPos) setMobileIconPos(getDefaultIconPos());
                       setShowMobileFooter(true);
                     }}
@@ -641,7 +708,6 @@ const BusinessApplication = () => {
                       touchAction: "none",
                     }}
                   >
-                    {/* simple chevron-up */}
                     <svg
                       className="w-5 h-5"
                       viewBox="0 0 20 20"
@@ -658,14 +724,12 @@ const BusinessApplication = () => {
                   </button>
                 )}
 
-                {/* full floating footer */}
                 {showMobileFooter && (
                   <div
                     className="fixed left-1/2 bottom-15 transform -translate-x-1/2 z-100 w-[calc(100%-2rem)] max-w-xl"
                     style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
                   >
                     <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl shadow-lg p-2 flex items-center justify-between gap-2">
-                      {/* Left side: Back + Start Over (compact) */}
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
@@ -692,9 +756,9 @@ const BusinessApplication = () => {
                         </button>
                       </div>
 
-                      {/* Right side: Continue (compact) + hide control */}
                       <div className="flex items-center gap-2">
                         <div className="flex items-center">
+                          {/* Continue buttons for different steps */}
                           {step === 1 && (
                             <button
                               type="button"
@@ -710,7 +774,11 @@ const BusinessApplication = () => {
                             </button>
                           )}
 
-                          {(step === 2 || step === 3) && (
+                          {((step === 3 && transactionType !== "NEW") ||
+                            (step === 4 && transactionType !== "NEW") ||
+                            (step === 3 && transactionType === "NEW") ||
+                            (step === 4 && transactionType === "NEW") ||
+                            (step === 5 && transactionType === "NEW")) && (
                             <button
                               type="button"
                               onClick={nextStep}
@@ -719,24 +787,12 @@ const BusinessApplication = () => {
                               Continue →
                             </button>
                           )}
-
-                          {step === 4 && (
-                            <button
-                              type="button"
-                              onClick={prevStep}
-                              className="px-4 py-2 rounded-md text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 ml-2"
-                            >
-                              ← Back
-                            </button>
-                          )}
                         </div>
 
-                        {/* hide button */}
                         <button
                           aria-label="Hide navigation"
                           type="button"
                           onClick={() => {
-                            // ensure we have an icon pos so the show-button can render
                             if (!mobileIconPos) {
                               setMobileIconPos(getDefaultIconPos());
                             }
@@ -752,7 +808,7 @@ const BusinessApplication = () => {
                 )}
               </div>
 
-              {/* Desktop Layout - Original horizontal layout */}
+              {/* Desktop Layout */}
               <div className="hidden md:flex items-center justify-between">
                 <div>
                   <button
@@ -781,7 +837,6 @@ const BusinessApplication = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {/* On step 1 show Continue (disabled until transactionType) */}
                   {step === 1 && (
                     <button
                       type="button"
@@ -797,8 +852,11 @@ const BusinessApplication = () => {
                     </button>
                   )}
 
-                  {/* On steps 2 & 3 show Continue to next step */}
-                  {(step === 2 || step === 3) && (
+                  {((step === 3 && transactionType !== "NEW") ||
+                    (step === 4 && transactionType !== "NEW") ||
+                    (step === 3 && transactionType === "NEW") ||
+                    (step === 4 && transactionType === "NEW") ||
+                    (step === 5 && transactionType === "NEW")) && (
                     <button
                       type="button"
                       onClick={nextStep}
@@ -812,7 +870,6 @@ const BusinessApplication = () => {
             </div>
           </main>
 
-          {/* Right Sidebar */}
           <aside className="bg-white w-72 hidden lg:flex flex-col overflow-y-auto p-3 sm:p-4">
             <RightSidebar
               recentActivities={recentActivities}
@@ -823,7 +880,6 @@ const BusinessApplication = () => {
         </div>
       </div>
 
-      {/* ✅ Success Modal */}
       <SuccessModal />
     </div>
   );

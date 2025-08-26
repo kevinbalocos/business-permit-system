@@ -3,6 +3,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const businessController = require("../controllers/businessController");
+const authenticateToken = require("../middleware/authenticateToken");
 
 const router = express.Router();
 
@@ -25,6 +26,7 @@ const upload = multer({ storage });
 
 router.post(
   "/submit",
+  authenticateToken, 
   upload.array("documents", 10), 
   businessController.submitApplication
 );
