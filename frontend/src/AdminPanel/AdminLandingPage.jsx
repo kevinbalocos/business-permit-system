@@ -240,7 +240,7 @@ const AdminLandingPage = () => {
           </div>
 
           {/* Bottom Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-15 sm:mb-0">
             {/* Recent Activities */}
             <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-white/20">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Activities</h3>
