@@ -82,6 +82,8 @@ const BusinessApplication = () => {
     productsServices: "",
     numberOfUnits: "",
     totalCapitalization: "",
+    paymentMethod: "", // <-- ADD THIS
+    paymentDetails: {},
   });
 
   const [documents, setDocuments] = useState({});
@@ -327,8 +329,11 @@ const BusinessApplication = () => {
   };
 
   const handlePaymentMethodSelect = (method, details) => {
-    setPaymentMethod(method);
-    setPaymentDetails(details);
+    setFormData((prev) => ({
+      ...prev,
+      paymentMethod: method,
+      paymentDetails: details,
+    }));
   };
 
   // ✅ Updated navigation helpers for new flow
@@ -406,28 +411,32 @@ const BusinessApplication = () => {
 
       const formDataToSend = new FormData();
 
-      // Append all form fields
+      // 1️⃣ Append all business application fields
       Object.entries(formData).forEach(([key, value]) => {
-        formDataToSend.append(key, value);
+        formDataToSend.append(key, value ?? ""); // Ensure empty fields don't break
       });
 
-      // Append uploaded documents if any
+      // 2️⃣ Append uploaded documents (if any)
       if (documents && Object.keys(documents).length > 0) {
         Object.values(documents).forEach((file) => {
           formDataToSend.append("documents", file);
         });
       }
 
-      // Add assessment and payment data
+      // 3️⃣ Append assessment and payment (if user already calculated)
       if (assessmentData) {
         formDataToSend.append("assessment", JSON.stringify(assessmentData));
       }
+
       if (paymentMethod) {
         formDataToSend.append("paymentMethod", paymentMethod);
-        formDataToSend.append("paymentDetails", JSON.stringify(paymentDetails));
+        formDataToSend.append(
+          "paymentDetails",
+          JSON.stringify(paymentDetails || {})
+        );
       }
 
-      // Get JWT token from localStorage
+      // 4️⃣ Attach JWT token for authentication
       const token = localStorage.getItem("token");
       if (!token) {
         showErrorToast("You are not logged in. Please log in first.");
@@ -435,13 +444,13 @@ const BusinessApplication = () => {
         return;
       }
 
-      // Send request with Authorization header
+      // 5️⃣ Send POST request to API
       const response = await fetch(
         "http://localhost:5000/api/business/submit",
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`, // ✅ Add token here
+            Authorization: `Bearer ${token}`,
           },
           body: formDataToSend,
         }
@@ -449,8 +458,10 @@ const BusinessApplication = () => {
 
       const data = await response.json();
 
+      // 6️⃣ Handle response
       if (response.ok) {
         setShowSuccessModal(true);
+        console.log("Submission successful:", data);
       } else {
         showErrorToast(data.message || "Submission failed. Please try again.");
       }
