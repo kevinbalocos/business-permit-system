@@ -486,7 +486,6 @@ const RegisterPage = () => {
                             required
                           >
                             <option value="user">Business Owner</option>
-                            <option value="admin">Municipal Admin</option>
                           </select>
                         </div>
                       </div>

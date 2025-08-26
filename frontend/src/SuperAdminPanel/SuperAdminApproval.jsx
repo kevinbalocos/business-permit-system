@@ -1,4 +1,5 @@
-import { useEffect, useState, useMemo, useCallback, Fragment } from "react";
+// src/SuperAdminPanel/SuperAdminApproval.jsx
+import { useEffect, useState, useMemo, useCallback } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import {
@@ -13,12 +14,160 @@ import {
   RefreshCw,
   UserCheck,
   UserX,
-  Download,
   MoreHorizontal,
   Info,
   LogOut,
 } from "lucide-react";
 
+/* =========================
+   CreateUserModal (top-level)
+   ========================= */
+const CreateUserModal = ({ isOpen, onClose, onCreated }) => {
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    role: "user",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((p) => ({ ...p, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.firstName || !form.lastName || !form.email) {
+      toast.error("First name, last name and email are required.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(
+        "http://localhost:5000/api/users/create",
+        {
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          phoneNumber: form.phoneNumber,
+          role: form.role,
+          password: form.password || undefined,
+        },
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        }
+      );
+
+      toast.success(res.data.message || "User created.");
+      onCreated?.();
+      onClose();
+      if (res.data.tempPassword) {
+        toast.success(`Temporary password: ${res.data.tempPassword}`, {
+          duration: 6000,
+        });
+      }
+    } catch (err) {
+      console.error("Create user failed:", err);
+      toast.error(err.response?.data?.message || "Failed to create user.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+        <h3 className="text-lg font-semibold mb-4">Create account</h3>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              name="firstName"
+              value={form.firstName}
+              onChange={handleChange}
+              placeholder="First name"
+              className="p-2 border rounded"
+              required
+            />
+            <input
+              name="lastName"
+              value={form.lastName}
+              onChange={handleChange}
+              placeholder="Last name"
+              className="p-2 border rounded"
+              required
+            />
+          </div>
+          <input
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="Email"
+            type="email"
+            className="w-full p-2 border rounded"
+            required
+          />
+          <div className="flex gap-3">
+            <input
+              name="phoneNumber"
+              value={form.phoneNumber}
+              onChange={handleChange}
+              placeholder="Phone (optional)"
+              className="flex-1 p-2 border rounded"
+            />
+            <select
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+              className="p-2 border rounded"
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+              <option value="cashier">Cashier</option>
+            </select>
+          </div>
+
+          <input
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            placeholder="Password (leave blank to auto-generate)"
+            className="w-full p-2 border rounded"
+          />
+
+          <div className="flex justify-end gap-2 mt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border rounded"
+              disabled={loading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-teal-600 text-white rounded"
+              disabled={loading}
+            >
+              {loading ? "Creating..." : "Create Account"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+/* =========================================
+   ConfirmationDialog
+   ========================================= */
 const ConfirmationDialog = ({
   isOpen,
   title,
@@ -65,6 +214,9 @@ const ConfirmationDialog = ({
   );
 };
 
+/* =========================================
+   AdminAndSuperAdminPage (main export)
+   ========================================= */
 const AdminAndSuperAdminPage = () => {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -78,10 +230,21 @@ const AdminAndSuperAdminPage = () => {
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [actionToConfirm, setActionToConfirm] = useState(null);
 
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
   const loggedInUserRole = localStorage.getItem("userRole");
   const loggedInUserEmail = localStorage.getItem("userEmail");
 
-  const [loggedInUserId, setLoggedInUserId] = useState(null);
+  const [loggedInUserId, setLoggedInUserId] = useState(() => {
+    // prefer explicit stored user id (if login saved it); otherwise null
+    try {
+      const u = JSON.parse(localStorage.getItem("user") || "null");
+      return u?.id || localStorage.getItem("userId") || null;
+    } catch {
+      return localStorage.getItem("userId") || null;
+    }
+  });
+
   useEffect(() => {
     if (loggedInUserEmail && users.length > 0) {
       const currentUser = users.find(
@@ -93,14 +256,22 @@ const AdminAndSuperAdminPage = () => {
     }
   }, [loggedInUserEmail, users]);
 
+  // helper to build headers with token (and guard if missing)
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
- 
-      const res = await axios.get(
-        `http://localhost:5000/api/users?role=${loggedInUserRole}&userId=${loggedInUserId}`
-      );
+      const token = localStorage.getItem("token");
+      // prefer sending token header; server will use req.user if present
+      const res = await axios.get("http://localhost:5000/api/users", {
+        params: { role: loggedInUserRole, userId: loggedInUserId },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       setUsers(res.data);
     } catch (err) {
       console.error("Failed to fetch users:", err);
@@ -110,10 +281,9 @@ const AdminAndSuperAdminPage = () => {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [loggedInUserRole, loggedInUserId]); 
+  }, [loggedInUserRole, loggedInUserId]);
 
   useEffect(() => {
-  
     if (loggedInUserRole) {
       fetchUsers();
     }
@@ -129,25 +299,37 @@ const AdminAndSuperAdminPage = () => {
   };
 
   const updateStatus = async (id, status, targetUserRole) => {
-  
+    // client-side guard
     if (loggedInUserRole === "admin" && targetUserRole !== "user") {
       toast.error("Admins can only change the status of regular users.");
       return;
     }
 
-    toast.promise(
-      axios.post(`http://localhost:5000/api/users/${id}/status`, {
-        status,
-        requestingUserRole: loggedInUserRole,
-      }),
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("You are not authenticated. Please login.");
+      return;
+    }
+
+    // call backend with Authorization header (server requires token)
+    await toast.promise(
+      axios.post(
+        `http://localhost:5000/api/users/${id}/status`,
+        { status }, // server uses req.user.role (token) to authorize
+        { headers: { Authorization: `Bearer ${token}` } }
+      ),
       {
         loading: `Updating user status to ${status}...`,
         success: (res) => {
+          // refresh users
           fetchUsers();
           return `User status updated to ${status}.`;
         },
         error: (err) => {
-          return err.response?.data?.message || "Failed to update status.";
+          // if server returns 401/403, prefer its message
+          const msg =
+            err?.response?.data?.message || "Failed to update status.";
+          return msg;
         },
       }
     );
@@ -158,7 +340,6 @@ const AdminAndSuperAdminPage = () => {
       toast.error("No users selected for bulk action.");
       return;
     }
-
 
     const usersToModify = users.filter((user) =>
       selectedUsers.includes(user.id)
@@ -183,18 +364,24 @@ const AdminAndSuperAdminPage = () => {
     if (!actionToConfirm) return;
 
     const status = actionToConfirm;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("You are not authenticated. Please login.");
+      return;
+    }
 
     const usersToUpdate = users.filter((user) =>
       selectedUsers.includes(user.id)
     );
 
-    toast.promise(
+    await toast.promise(
       Promise.all(
         usersToUpdate.map((user) =>
-          axios.post(`http://localhost:5000/api/users/${user.id}/status`, {
-            status,
-            requestingUserRole: loggedInUserRole,
-          })
+          axios.post(
+            `http://localhost:5000/api/users/${user.id}/status`,
+            { status },
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
         )
       ),
       {
@@ -205,10 +392,12 @@ const AdminAndSuperAdminPage = () => {
           return `Successfully ${status}d ${selectedUsers.length} users.`;
         },
         error: (err) => {
-          return err.response?.data?.message || "Bulk update failed.";
+          const msg = err?.response?.data?.message || "Bulk update failed.";
+          return msg;
         },
       }
     );
+
     setActionToConfirm(null);
   };
 
@@ -218,10 +407,12 @@ const AdminAndSuperAdminPage = () => {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userId");
     localStorage.removeItem("userRole");
     localStorage.removeItem("userStatus");
-    localStorage.removeItem("userEmail"); 
-
+    localStorage.removeItem("userEmail");
     window.location.href = "/";
     toast.success("Logged out successfully!");
   };
@@ -350,8 +541,6 @@ const AdminAndSuperAdminPage = () => {
               background: "#FEF2F2",
               color: "#991B1B",
               border: "1px solid #F87171",
-              boxShadow:
-                "0 4px 6px -1px rgba(239, 68, 68, 0.1), 0 2px 4px -1px rgba(239, 68, 68, 0.06)",
             },
           },
         }}
@@ -390,6 +579,14 @@ const AdminAndSuperAdminPage = () => {
 
             <div className="flex items-center space-x-3">
               <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-sm"
+              >
+                <Users className="w-4 h-4" />
+                <span>Create account</span>
+              </button>
+
+              <button
                 onClick={refreshUsers}
                 disabled={isRefreshing}
                 className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-sm"
@@ -411,6 +608,7 @@ const AdminAndSuperAdminPage = () => {
         </div>
       </div>
 
+      {/* page content */}
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -577,8 +775,7 @@ const AdminAndSuperAdminPage = () => {
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Role
-                    </th>{" "}
-                
+                    </th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
@@ -607,7 +804,6 @@ const AdminAndSuperAdminPage = () => {
                           type="checkbox"
                           checked={selectedUsers.includes(user.id)}
                           onChange={() => toggleUserSelection(user.id)}
-                         
                           disabled={
                             user.role === "superadmin" &&
                             loggedInUserRole !== "superadmin"
@@ -619,7 +815,7 @@ const AdminAndSuperAdminPage = () => {
                         <div className="flex items-center space-x-3">
                           <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-teal-400 to-teal-500 rounded-full flex items-center justify-center">
                             <span className="text-white text-sm font-medium">
-                              {user.email.charAt(0).toUpperCase()}
+                              {user.email?.charAt(0)?.toUpperCase() || "U"}
                             </span>
                           </div>
                           <div>
@@ -672,7 +868,7 @@ const AdminAndSuperAdminPage = () => {
                               (loggedInUserRole === "admin" &&
                                 user.role !== "user") ||
                               (loggedInUserRole === "superadmin" &&
-                                user.role === "superadmin") 
+                                user.role === "superadmin")
                             }
                             className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-100 rounded-md hover:bg-emerald-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
@@ -686,7 +882,7 @@ const AdminAndSuperAdminPage = () => {
                             disabled={
                               user.status === "denied" ||
                               (loggedInUserRole === "admin" &&
-                                user.role !== "user") || 
+                                user.role !== "user") ||
                               (loggedInUserRole === "superadmin" &&
                                 user.role === "superadmin")
                             }
@@ -716,66 +912,35 @@ const AdminAndSuperAdminPage = () => {
           <p>Last updated: {new Date().toLocaleString()}</p>
         </div>
       </div>
-      <style jsx>{`
+
+      {/* Create User Modal */}
+      <CreateUserModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreated={() => fetchUsers()}
+      />
+
+      {/* Replace style jsx with plain style to avoid React 'jsx' prop warnings */}
+      <style>{`
         @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(-20px); } 
+          to { opacity: 1; transform: translateY(0); }
         }
-
         @keyframes scale-in {
-          from {
-            opacity: 0;
-            transform: scale(0);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
+          from { opacity: 0; transform: scale(0); }
+          to { opacity: 1; transform: scale(1); }
         }
-
         @keyframes pulse {
-          0%,
-          100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.5;
-          }
+          0%,100% { opacity: 1; } 50% { opacity: 0.5; }
         }
-
         @keyframes bounce {
-          0%,
-          100% {
-            transform: translateY(-5%);
-            animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
-          }
-          50% {
-            transform: translateY(0);
-            animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
-          }
+          0%,100% { transform: translateY(-5%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+          50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
         }
-
-        .animate-fade-in {
-          animation: fade-in 1s ease-out;
-        }
-
-        .animate-scale-in {
-          animation: scale-in 0.3s ease-out;
-        }
-
-        .animate-pulse {
-          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        .animate-bounce {
-          animation: bounce 1s infinite;
-        }
+        .animate-fade-in { animation: fade-in 1s ease-out; }
+        .animate-scale-in { animation: scale-in 0.3s ease-out; }
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
+        .animate-bounce { animation: bounce 1s infinite; }
       `}</style>
     </div>
   );
