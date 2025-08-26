@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import {
   FileText,
   CheckCircle,
@@ -89,6 +95,9 @@ const BusinessApplication = () => {
 
   // New: control visibility of the mobile floating footer
   const [showMobileFooter, setShowMobileFooter] = useState(true);
+
+  // NEW: hide both mobile and desktop nav controls while submitting / after submit
+  const [hideNavControls, setHideNavControls] = useState(false);
 
   // Mobile draggable icon position (px from left/top)
   const [mobileIconPos, setMobileIconPos] = useState(null);
@@ -277,55 +286,63 @@ const BusinessApplication = () => {
   ];
   const reminders = ["Submit quarterly report", "Renew before Dec 31"];
 
-  // ✅ Assign specific images per transaction type
-  const transactionTypes = [
-    {
-      id: "NEW",
-      title: "New Application",
-      description: "For businesses applying for their first permit",
-      icon: FileText,
-      image: imgNew,
-    },
-    {
-      id: "RENEWAL",
-      title: "Renewal",
-      description: "For existing businesses renewing their permit",
-      icon: CheckCircle,
-      image: imgRenewal,
-    },
-    {
-      id: "QUARTERLY",
-      title: "Quarterly Report",
-      description: "Submit quarterly reports",
-      icon: FileText,
-      image: imgQuarterly,
-    },
-    {
-      id: "DELINQUENT",
-      title: "Delinquent",
-      description: "For overdue permits",
-      icon: AlertCircle,
-      image: imgDelinquent,
-    },
-    {
-      id: "CHANGE_REQUEST",
-      title: "Change Request",
-      description: "Modify existing business info",
-      icon: Building,
-      image: imgChangeRequest,
-    },
-    {
-      id: "RETIREMENT",
-      title: "Retirement",
-      description: "Cease operations permanently",
-      icon: User,
-      image: imgRetirement,
-    },
-  ];
+  // Memoized transaction types (avoids recreating array on every render)
+  const transactionTypes = useMemo(
+    () => [
+      {
+        id: "NEW",
+        title: "New Application",
+        description: "For businesses applying for their first permit",
+        icon: FileText,
+        image: imgNew,
+      },
+      {
+        id: "RENEWAL",
+        title: "Renewal",
+        description: "For existing businesses renewing their permit",
+        icon: CheckCircle,
+        image: imgRenewal,
+      },
+      {
+        id: "QUARTERLY",
+        title: "Quarterly Report",
+        description: "Submit quarterly reports",
+        icon: FileText,
+        image: imgQuarterly,
+      },
+      {
+        id: "DELINQUENT",
+        title: "Delinquent",
+        description: "For overdue permits",
+        icon: AlertCircle,
+        image: imgDelinquent,
+      },
+      {
+        id: "CHANGE_REQUEST",
+        title: "Change Request",
+        description: "Modify existing business info",
+        icon: Building,
+        image: imgChangeRequest,
+      },
+      {
+        id: "RETIREMENT",
+        title: "Retirement",
+        description: "Cease operations permanently",
+        icon: User,
+        image: imgRetirement,
+      },
+    ],
+    []
+  );
 
-  const generateApplicationNumber = () => {
+  // Efficient handler: when a user selects a transaction type,
+  // immediately set it, generate application number, and go to next step.
+  const handleSelectTransaction = useCallback((id) => {
+    setTransactionType(id);
+    // generate application number synchronously
     setApplicationNumber(`APP-${Date.now().toString().slice(-6)}`);
-  };
+    setStep(2);
+  }, []);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -337,7 +354,14 @@ const BusinessApplication = () => {
 
   // safer navigation helpers
   const nextStep = () => {
-    if (step === 1) generateApplicationNumber();
+    // keep legacy behavior if user clicks Continue instead of selecting directly
+    if (step === 1 && !transactionType) return;
+    if (step === 1) {
+      // ensure application number exists if user used Continue
+      setApplicationNumber((prev) =>
+        prev ? prev : `APP-${Date.now().toString().slice(-6)}`
+      );
+    }
     if (step < 4) setStep((s) => s + 1);
   };
   const prevStep = () => {
@@ -387,6 +411,9 @@ const BusinessApplication = () => {
   // ✅ Updated modern handleSubmit
   const handleSubmit = async () => {
     try {
+      // hide nav controls immediately when submit starts
+      setHideNavControls(true);
+      setShowMobileFooter(false);
       setIsSubmitting(true);
 
       const formDataToSend = new FormData();
@@ -414,12 +441,19 @@ const BusinessApplication = () => {
       const data = await response.json();
 
       if (response.ok) {
+        // keep nav controls hidden; show success modal
         setShowSuccessModal(true);
       } else {
+        // revert nav visibility so user can continue
+        setHideNavControls(false);
+        setShowMobileFooter(true);
         showErrorToast(data.message || "Submission failed. Please try again.");
       }
     } catch (error) {
       console.error("Submission failed:", error);
+      // revert nav visibility so user can continue
+      setHideNavControls(false);
+      setShowMobileFooter(true);
       showErrorToast(
         "Server error. Please check your connection and try again."
       );
@@ -507,10 +541,10 @@ const BusinessApplication = () => {
         </div>
 
         {/* Content area fills remaining height */}
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden ">
           {/* Main Content */}
-          <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 flex flex-col mb-23 sm:mb-0">
-            <div className="flex-1">
+          <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 flex flex-col  ">
+            <div className="flex-1 mb-20 sm:mb-0 ">
               {step === 1 && (
                 <div className="bg-white p-4 flex flex-col min-h-full">
                   <h2 className="text-xl font-bold mb-4">
@@ -522,7 +556,15 @@ const BusinessApplication = () => {
                       return (
                         <div
                           key={t.id}
-                          onClick={() => setTransactionType(t.id)}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => handleSelectTransaction(t.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              handleSelectTransaction(t.id);
+                            }
+                          }}
                           className={`p-4 border rounded-lg cursor-pointer transition transform hover:scale-[1.02] ${
                             transactionType === t.id
                               ? "border-teal-600 bg-teal-50"
@@ -621,194 +663,203 @@ const BusinessApplication = () => {
               {/* Mobile Floating Footer - small, centered & hideable */}
               {/* When hidden we show a tiny draggable show-button; when visible we show full bar */}
               <div className="md:hidden">
-                {/* draggable show-button (visible when footer is hidden) */}
-                {!showMobileFooter && mobileIconPos && (
-                  <button
-                    aria-label="Show navigation"
-                    onPointerDown={onPointerDownIcon}
-                    onClick={() => {
-                      // Normal click fallback: ensure we have a position and show footer
-                      if (!mobileIconPos) setMobileIconPos(getDefaultIconPos());
-                      setShowMobileFooter(true);
-                    }}
-                    className="z-50 rounded-full bg-teal-600 text-white flex items-center justify-center shadow-lg"
-                    style={{
-                      position: "fixed",
-                      left: `${mobileIconPos.x}px`,
-                      top: `${mobileIconPos.y}px`,
-                      width: MOBILE_ICON_SIZE,
-                      height: MOBILE_ICON_SIZE,
-                      touchAction: "none",
-                    }}
-                  >
-                    {/* simple chevron-up */}
-                    <svg
-                      className="w-5 h-5"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      stroke="currentColor"
-                    >
-                      <path
-                        d="M5 12l5-5 5 5"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                )}
-
-                {/* full floating footer */}
-                {showMobileFooter && (
-                  <div
-                    className="fixed left-1/2 bottom-15 transform -translate-x-1/2 z-100 w-[calc(100%-2rem)] max-w-xl"
-                    style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-                  >
-                    <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl shadow-lg p-2 flex items-center justify-between gap-2">
-                      {/* Left side: Back + Start Over (compact) */}
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={prevStep}
-                          disabled={step === 1}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold ${
-                            step === 1
-                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                              : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
-                          }`}
+                {/* entire mobile area hidden while hideNavControls is true */}
+                {!hideNavControls && (
+                  <>
+                    {/* draggable show-button (visible when footer is hidden) */}
+                    {!showMobileFooter && mobileIconPos && (
+                      <button
+                        aria-label="Show navigation"
+                        onPointerDown={onPointerDownIcon}
+                        onClick={() => {
+                          // Normal click fallback: ensure we have a position and show footer
+                          if (!mobileIconPos)
+                            setMobileIconPos(getDefaultIconPos());
+                          setShowMobileFooter(true);
+                        }}
+                        className="z-50 rounded-full bg-teal-600 text-white flex items-center justify-center shadow-lg"
+                        style={{
+                          position: "fixed",
+                          left: `${mobileIconPos.x}px`,
+                          top: `${mobileIconPos.y}px`,
+                          width: MOBILE_ICON_SIZE,
+                          height: MOBILE_ICON_SIZE,
+                          touchAction: "none",
+                        }}
+                      >
+                        {/* simple chevron-up */}
+                        <svg
+                          className="w-5 h-5"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          stroke="currentColor"
                         >
-                          ←
-                        </button>
+                          <path
+                            d="M5 12l5-5 5 5"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    )}
 
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setStep(1);
-                            setTransactionType("");
-                          }}
-                          className="px-3 py-2 rounded-md text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
-                        >
-                          Start Over
-                        </button>
-                      </div>
-
-                      {/* Right side: Continue (compact) + hide control */}
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center">
-                          {step === 1 && (
-                            <button
-                              type="button"
-                              onClick={nextStep}
-                              disabled={!transactionType}
-                              className={`px-4 py-2 rounded-md text-sm font-semibold ${
-                                transactionType
-                                  ? "bg-teal-600 text-white hover:bg-teal-700"
-                                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                              }`}
-                            >
-                              Continue →
-                            </button>
-                          )}
-
-                          {(step === 2 || step === 3) && (
-                            <button
-                              type="button"
-                              onClick={nextStep}
-                              className="px-4 py-2 rounded-md text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700"
-                            >
-                              Continue →
-                            </button>
-                          )}
-
-                          {step === 4 && (
+                    {/* full floating footer */}
+                    {showMobileFooter && (
+                      <div
+                        className="fixed left-1/2 bottom-15 transform -translate-x-1/2 z-100 w-[calc(100%-2rem)] max-w-xl"
+                        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+                      >
+                        <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl shadow-lg p-2 flex items-center justify-between gap-2">
+                          {/* Left side: Back + Start Over (compact) */}
+                          <div className="flex items-center gap-2">
                             <button
                               type="button"
                               onClick={prevStep}
-                              className="px-4 py-2 rounded-md text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 ml-2"
+                              disabled={step === 1}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold ${
+                                step === 1
+                                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                  : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                              }`}
                             >
-                              ← Back
+                              ←
                             </button>
-                          )}
-                        </div>
 
-                        {/* hide button */}
-                        <button
-                          aria-label="Hide navigation"
-                          type="button"
-                          onClick={() => {
-                            // ensure we have an icon pos so the show-button can render
-                            if (!mobileIconPos) {
-                              setMobileIconPos(getDefaultIconPos());
-                            }
-                            setShowMobileFooter(false);
-                          }}
-                          className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm text-sm text-gray-600"
-                        >
-                          ×
-                        </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setStep(1);
+                                setTransactionType("");
+                              }}
+                              className="px-3 py-2 rounded-md text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                            >
+                              Start Over
+                            </button>
+                          </div>
+
+                          {/* Right side: Continue (compact) + hide control */}
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center">
+                              {step === 1 && (
+                                <button
+                                  type="button"
+                                  onClick={nextStep}
+                                  disabled={!transactionType}
+                                  className={`px-4 py-2 rounded-md text-sm font-semibold ${
+                                    transactionType
+                                      ? "bg-teal-600 text-white hover:bg-teal-700"
+                                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                  }`}
+                                >
+                                  Continue →
+                                </button>
+                              )}
+
+                              {(step === 2 || step === 3) && (
+                                <button
+                                  type="button"
+                                  onClick={nextStep}
+                                  className="px-4 py-2 rounded-md text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700"
+                                >
+                                  Continue →
+                                </button>
+                              )}
+
+                              {step === 4 && (
+                                <button
+                                  type="button"
+                                  onClick={prevStep}
+                                  className="px-4 py-2 rounded-md text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 ml-2"
+                                >
+                                  ← Back
+                                </button>
+                              )}
+                            </div>
+
+                            {/* hide button */}
+                            <button
+                              aria-label="Hide navigation"
+                              type="button"
+                              onClick={() => {
+                                // ensure we have an icon pos so the show-button can render
+                                if (!mobileIconPos) {
+                                  setMobileIconPos(getDefaultIconPos());
+                                }
+                                setShowMobileFooter(false);
+                              }}
+                              className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm text-sm text-gray-600"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    )}
+                  </>
                 )}
               </div>
 
               {/* Desktop Layout - Original horizontal layout */}
-              <div className="hidden md:flex items-center justify-between">
-                <div>
-                  <button
-                    type="button"
-                    onClick={prevStep}
-                    disabled={step === 1}
-                    className={`px-4 py-2 rounded-lg font-semibold mr-2 ${
-                      step === 1
-                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    ← Back
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStep(1);
-                      setTransactionType("");
-                    }}
-                    className="px-4 py-2 rounded-lg font-semibold bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                  >
-                    Start Over
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  {/* On step 1 show Continue (disabled until transactionType) */}
-                  {step === 1 && (
+              {/* hide desktop nav controls while hideNavControls is true */}
+              {!hideNavControls && (
+                <div className="hidden md:flex items-center justify-between">
+                  <div>
                     <button
                       type="button"
-                      onClick={nextStep}
-                      disabled={!transactionType}
-                      className={`px-6 py-2 rounded-lg font-semibold ${
-                        transactionType
-                          ? "bg-teal-600 text-white hover:bg-teal-700"
-                          : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      onClick={prevStep}
+                      disabled={step === 1}
+                      className={`px-4 py-2 rounded-lg font-semibold mr-2 ${
+                        step === 1
+                          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
                       }`}
                     >
-                      Continue →
+                      ← Back
                     </button>
-                  )}
 
-                  {/* On steps 2 & 3 show Continue to next step */}
-                  {(step === 2 || step === 3) && (
                     <button
                       type="button"
-                      onClick={nextStep}
-                      className="px-6 py-2 rounded-lg font-semibold bg-teal-600 text-white hover:bg-teal-700"
+                      onClick={() => {
+                        setStep(1);
+                        setTransactionType("");
+                      }}
+                      className="px-4 py-2 rounded-lg font-semibold bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
                     >
-                      Continue →
+                      Start Over
                     </button>
-                  )}
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {/* On step 1 show Continue (disabled until transactionType) */}
+                    {step === 1 && (
+                      <button
+                        type="button"
+                        onClick={nextStep}
+                        disabled={!transactionType}
+                        className={`px-6 py-2 rounded-lg font-semibold ${
+                          transactionType
+                            ? "bg-teal-600 text-white hover:bg-teal-700"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        }`}
+                      >
+                        Continue →
+                      </button>
+                    )}
+
+                    {/* On steps 2 & 3 show Continue to next step */}
+                    {(step === 2 || step === 3) && (
+                      <button
+                        type="button"
+                        onClick={nextStep}
+                        className="px-6 py-2 rounded-lg font-semibold bg-teal-600 text-white hover:bg-teal-700"
+                      >
+                        Continue →
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </main>
 
