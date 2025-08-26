@@ -3,7 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
   Home,
   FileText,
-  CreditCard,
+  FileCheck,
   ClipboardList,
   Bell,
   Settings,
@@ -34,10 +34,7 @@ const LeftSidebar = ({ user: propUser = null }) => {
   const menuItems = [
     { icon: Home, label: "Dashboard", path: "/user-dashboard" },
     { icon: FileText, label: "Applications", path: "/business-application" },
-    { icon: CreditCard, label: "Payments", path: "/payments" },
-    { icon: ClipboardList, label: "Requirements", path: "/requirements" },
-    { icon: Bell, label: "Notifications", path: "/notifications" },
-    { icon: HelpCircle, label: "Help", path: "/help" },
+    { icon: FileCheck, label: "Release", path: "/permit-release" },
     { icon: Settings, label: "Settings", path: "/settings" },
   ];
 

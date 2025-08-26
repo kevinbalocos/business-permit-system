@@ -57,45 +57,28 @@ const LoginPage = () => {
 
     setLoading(true);
     try {
+      // Call backend for login
       const res = await axios.post("http://localhost:5000/api/login", form);
 
-      // backend now returns: { message: "Login successful", user: { ... } }
+      // Extract token and user from response
+      const token = res.data?.token;
       const user = res.data?.user;
-      if (!user) {
-        // fallback: if backend returns old style, try role/status
-        const role = res.data?.role;
-        const status = res.data?.status;
-        localStorage.setItem("userRole", role || "");
-        localStorage.setItem("userStatus", status || "");
-        localStorage.setItem("userEmail", form.email);
-        // toast.success("Login successful (partial).");
-        // navigate depending on role if available
-        if (role === "superadmin") navigate("/superadmin");
-        else if (role === "admin") {
-          if (status === "approved") navigate("/admin-dashboard");
-          else {
-            toast.error("Your admin account is pending approval.");
-            navigate("/");
-          }
-        } else if (role === "user") {
-          if (status === "approved") navigate("/user-dashboard");
-          else {
-            toast.error("Your user account is pending approval.");
-            navigate("/");
-          }
-        } else navigate("/");
+
+      if (!token || !user) {
+        toast.error("Login failed: No token or user data returned.");
         return;
       }
 
-      // Save complete user object to localStorage so other components can read it
+      // Save token and user info in localStorage
+      localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("userRole", user.role || "");
       localStorage.setItem("userStatus", user.status || "");
       localStorage.setItem("userEmail", user.email || form.email);
 
-      // toast.success("Login successful!");
+      toast.success("Login successful!");
 
-      // Redirect based on role/status
+      // Redirect based on user role and status
       const role = user.role;
       const status = user.status;
 

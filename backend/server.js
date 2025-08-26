@@ -6,6 +6,7 @@ require("dotenv").config();
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const transporter = require("./mailer");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 const PORT = 5000;
@@ -84,23 +85,19 @@ app.post("/api/login", (req, res) => {
 
     // email verification
     if (!user.verified) {
-      return res
-        .status(403)
-        .json({ message: "Please verify your email before logging in." });
+      return res.status(403).json({ message: "Please verify your email before logging in." });
     }
 
     // account status checks
     if (user.status === "pending") {
-      return res
-        .status(403)
-        .json({ message: "Your account is pending approval." });
+      return res.status(403).json({ message: "Your account is pending approval." });
     }
 
     if (user.status === "denied") {
       return res.status(403).json({ message: "Your account was denied." });
     }
 
-    // success: prepare a safe user payload (do NOT include password)
+    // prepare payload for token
     const userPayload = {
       id: user.id,
       first_name: user.first_name,
@@ -110,10 +107,13 @@ app.post("/api/login", (req, res) => {
       status: user.status,
     };
 
-    // return the user object so frontend can save it to localStorage
+    // generate JWT
+    const token = jwt.sign(userPayload, process.env.JWT_SECRET, { expiresIn: "1h" });
+
     return res.json({
       message: "Login successful",
-      user: userPayload,
+      token,       // send the token to frontend
+      user: userPayload
     });
   });
 });

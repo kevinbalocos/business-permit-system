@@ -2,6 +2,11 @@ const db = require("../db");
 const path = require("path");
 
 exports.submitApplication = (req, res) => {
+  const userId = req.user?.id;
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized: User ID not found." });
+  }
+
   const {
     transactionType,
     applicationNumber,
@@ -48,15 +53,14 @@ exports.submitApplication = (req, res) => {
     totalCapitalization
   } = req.body;
 
-  // ✅ Corrected placeholders (41 ? marks)
   const insertAppSQL = `
     INSERT INTO business_applications 
-    (business_type, dti_sec_cda_number, business_name, tax_id_number, trade_name, first_name, middle_name, last_name, extension, sex, email, telephone, mobile, region, province, city, barangay, address_line_1, taxpayer_zip_code, business_area, employees_in_area, male_employees, female_employees, van_delivery_vehicles, truck_delivery_vehicles, motorcycle_delivery_vehicles, same_as_business_address, taxpayer_region, taxpayer_province, taxpayer_city, taxpayer_barangay, taxpayer_address_line_1, own_property, lessor_name, monthly_rental, tax_incentives, business_activity, line_of_business, products_services, number_of_units, total_capitalization)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    (user_id, business_type, dti_sec_cda_number, business_name, tax_id_number, trade_name, first_name, middle_name, last_name, extension, sex, email, telephone, mobile, region, province, city, barangay, address_line_1, taxpayer_zip_code, business_area, employees_in_area, male_employees, female_employees, van_delivery_vehicles, truck_delivery_vehicles, motorcycle_delivery_vehicles, same_as_business_address, taxpayer_region, taxpayer_province, taxpayer_city, taxpayer_barangay, taxpayer_address_line_1, own_property, lessor_name, monthly_rental, tax_incentives, business_activity, line_of_business, products_services, number_of_units, total_capitalization)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  // ✅ Ensure appValues count matches placeholders count (41)
   const appValues = [
+    userId,
     businessType,
     dtiSecCdaNumber,
     businessName,
@@ -100,10 +104,6 @@ exports.submitApplication = (req, res) => {
     totalCapitalization
   ];
 
-  // Debugging helper to verify counts
-  console.log("Placeholders:", (insertAppSQL.match(/\?/g) || []).length);
-  console.log("Values length:", appValues.length);
-
   db.query(insertAppSQL, appValues, (err, result) => {
     if (err) {
       console.error("❌ Error inserting business application:", err);
@@ -112,7 +112,6 @@ exports.submitApplication = (req, res) => {
 
     const applicationId = result.insertId;
 
-    // Save uploaded documents if any
     if (req.files && req.files.length > 0) {
       const docSQL = `
         INSERT INTO application_documents (application_id, document_type, file_path)
@@ -140,3 +139,4 @@ exports.submitApplication = (req, res) => {
     });
   });
 };
+
