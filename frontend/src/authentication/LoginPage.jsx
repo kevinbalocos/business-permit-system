@@ -82,19 +82,25 @@ const LoginPage = () => {
       const role = user.role;
       const status = user.status;
 
+      // after you get user from res.data.user
       if (role === "superadmin") {
         navigate("/superadmin");
       } else if (role === "admin") {
-        if (status === "approved") {
-          navigate("/admin-dashboard");
-        } else {
+        if (status === "approved") navigate("/admin-dashboard");
+        else {
           toast.error("Your admin account is pending approval.");
           navigate("/");
         }
+      } else if (role === "cashier") {
+        // Optionally check approved
+        if (status === "approved") navigate("/cashier-dashboard");
+        else {
+          toast.error("Your cashier account is pending approval.");
+          navigate("/");
+        }
       } else if (role === "user") {
-        if (status === "approved") {
-          navigate("/user-dashboard");
-        } else {
+        if (status === "approved") navigate("/user-dashboard");
+        else {
           toast.error("Your user account is pending approval.");
           navigate("/");
         }
@@ -345,7 +351,7 @@ const LoginPage = () => {
         </div>
       </div>{" "}
       {/* end main */}
-      <style jsx>{`
+      <style>{`
         @keyframes fade-in {
           from {
             opacity: 0;
