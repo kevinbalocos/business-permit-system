@@ -8,6 +8,8 @@ import AdminPage from "./AdminPanel/AdminLandingPage";
 import VerifyEmailPage from "./authentication/VerifyEmailPage";
 import BusinessApplication from "./UserPanel/MyApplication/BusinessApplication";
 import EntryPage from "./EntryPanel/EntryPage";
+import PermitRelease from "./UserPanel/PermitRelease";
+import Settings from "./UserPanel/Settings";
 
 const App = () => {
   return (
@@ -26,6 +28,8 @@ const App = () => {
         <Route path="/admin-dashboard" element={<AdminPage />} />
         <Route path="/verify" element={<VerifyEmailPage />} />
         <Route path="/business-application" element={<BusinessApplication />} />
+        <Route path="/permit-release" element={<PermitRelease />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </>
   );
