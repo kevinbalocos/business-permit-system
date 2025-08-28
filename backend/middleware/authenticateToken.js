@@ -1,12 +1,5 @@
-// backend/middleware/authenticateToken.js
 const jwt = require("jsonwebtoken");
 
-/**
- * Middleware to verify JWT if present.
- * If token is valid, attaches decoded payload to req.user.
- * If no token present, it simply calls next() (so endpoints can optionally allow anonymous access).
- * To *require* authentication for an endpoint, use this middleware + explicit check (or write a wrapper that rejects when no req.user).
- */
 function optionalAuthenticateToken(req, res, next) {
   try {
     const authHeader = req.headers["authorization"] || req.headers["Authorization"];
@@ -29,9 +22,6 @@ function optionalAuthenticateToken(req, res, next) {
   }
 }
 
-/**
- * Middleware to require a valid JWT. Returns 401/403 if missing/invalid.
- */
 function authenticateToken(req, res, next) {
   try {
     const authHeader = req.headers["authorization"] || req.headers["Authorization"];
@@ -49,9 +39,6 @@ function authenticateToken(req, res, next) {
   }
 }
 
-/**
- * Factory to require roles.
- */
 function requireRole(...allowedRoles) {
   return (req, res, next) => {
     const role = req.user?.role;

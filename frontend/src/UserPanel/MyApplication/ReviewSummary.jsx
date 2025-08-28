@@ -279,6 +279,52 @@ const ReviewSummary = ({
             </div>
           </div>
         </div>
+
+        {/* Declaration Section */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">
+            Declaration
+          </h3>
+          <div className="flex items-start space-x-3">
+            <input
+              type="checkbox"
+              id="declaration"
+              checked={declarationAccepted}
+              onChange={(e) => setDeclarationAccepted(e.target.checked)}
+              className="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 mt-1"
+            />
+            <label
+              htmlFor="declaration"
+              className="text-sm text-gray-700 leading-relaxed"
+            >
+              <span className="font-semibold">
+                I declare that the information provided is true and correct.
+              </span>{" "}
+              I understand that any false information may result in the
+              rejection of this application and may subject me to legal
+              consequences under applicable laws. I also consent to the
+              processing of my personal data in accordance with the Data Privacy
+              Act of 2012.
+            </label>
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={onSubmit}
+            disabled={!declarationAccepted}
+            className={`px-12 py-4 rounded-lg font-bold text-lg transition-all duration-200 ${
+              declarationAccepted
+                ? "bg-teal-600 text-white hover:bg-teal-700 shadow-lg transform hover:scale-105"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
+          >
+            {declarationAccepted
+              ? "Submit Application"
+              : "Please Accept Declaration"}
+          </button>
+        </div>
       </div>
     </div>
   );

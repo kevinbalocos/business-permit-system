@@ -7,6 +7,9 @@ import {
   User,
   CreditCard,
   Calculator,
+  Clock,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -23,8 +26,8 @@ import DelinquentForm from "./DelinquentForm";
 import DocumentUpload from "./DocumentUpload";
 import ReviewSummary from "./ReviewSummary";
 import AcceptTerms from "./AcceptTerms";
-import Assessment from "./Assessment"; // New component
-import PaymentMethod from "./PaymentMethod"; // New component
+import Assessment from "./Assessment";
+import PaymentMethod from "./PaymentMethod";
 
 // ✅ Import images
 import imgNew from "../../assets/authentication.jpg";
@@ -40,6 +43,7 @@ const BusinessApplication = () => {
   const [step, setStep] = useState(1);
   const [transactionType, setTransactionType] = useState("");
   const [applicationNumber, setApplicationNumber] = useState("");
+  const [applicationId, setApplicationId] = useState(null);
   const [formData, setFormData] = useState({
     businessType: "",
     dtiSecCdaNumber: "",
@@ -82,7 +86,7 @@ const BusinessApplication = () => {
     productsServices: "",
     numberOfUnits: "",
     totalCapitalization: "",
-    paymentMethod: "", // <-- ADD THIS
+    paymentMethod: "",
     paymentDetails: {},
   });
 
@@ -91,9 +95,16 @@ const BusinessApplication = () => {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [paymentDetails, setPaymentDetails] = useState({});
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Approval states
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [approvalStatus, setApprovalStatus] = useState("pending"); // pending, approved, rejected
+  const [approvalMessage, setApprovalMessage] = useState("");
+  const [isSubmittingApplication, setIsSubmittingApplication] = useState(false);
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+
   const navigate = useNavigate();
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showMobileFooter, setShowMobileFooter] = useState(true);
   const [mobileIconPos, setMobileIconPos] = useState(null);
@@ -102,7 +113,7 @@ const BusinessApplication = () => {
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
-  // Mobile footer and icon position logic (same as before)
+  // Mobile footer and icon position logic
   useEffect(() => {
     try {
       const saved = localStorage.getItem("businessAppMobileFooterVisible");
@@ -193,7 +204,7 @@ const BusinessApplication = () => {
     return () => window.removeEventListener("resize", onResize);
   }, [mobileIconPos]);
 
-  // Drag handlers (same as before)
+  // Drag handlers
   const onPointerDownIcon = (e) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     if (!mobileIconPos) return;
@@ -336,7 +347,7 @@ const BusinessApplication = () => {
     }));
   };
 
-  // ✅ Updated navigation helpers for new flow
+  // Updated navigation helpers
   const getMaxSteps = () => {
     if (transactionType === "NEW") {
       return 7; // 1:Select, 2:Terms, 3:Form+Docs, 4:Review, 5:Assessment, 6:Payment, 7:Success
@@ -369,6 +380,51 @@ const BusinessApplication = () => {
     setTransactionType("");
   };
 
+  // Polling for approval status
+  const pollApprovalStatus = async () => {
+    if (!applicationId) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:5000/api/business/status/${applicationId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === "approved") {
+          setApprovalStatus("approved");
+          setApprovalMessage("Your application has been approved!");
+          setTimeout(() => {
+            setShowApprovalModal(false);
+            setStep(5); // Move to Assessment step
+          }, 2000);
+        } else if (data.status === "rejected") {
+          setApprovalStatus("rejected");
+          setApprovalMessage(data.message || "Your application was rejected.");
+        }
+      }
+    } catch (error) {
+      console.error("Error checking approval status:", error);
+    }
+  };
+
+  // Start polling when approval modal is shown
+  useEffect(() => {
+    let interval;
+    if (showApprovalModal && approvalStatus === "pending") {
+      interval = setInterval(pollApprovalStatus, 3000); // Poll every 3 seconds
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [showApprovalModal, approvalStatus, applicationId]);
+
   const showErrorToast = (message) => {
     const toast = document.createElement("div");
     toast.className =
@@ -400,51 +456,149 @@ const BusinessApplication = () => {
     }, 5000);
   };
 
-  const handleGoToDashboard = () => {
-    setShowSuccessModal(false);
-    navigate("/user-dashboard", { replace: true });
-  };
-
-  const handleSubmit = async () => {
+  // Handle initial application submission (Step 4 - NEW only)
+  const handleApplicationSubmit = async () => {
     try {
-      setIsSubmitting(true);
+      setIsSubmittingApplication(true);
 
       const formDataToSend = new FormData();
 
-      // 1️⃣ Append all business application fields
+      // Append business application fields
       Object.entries(formData).forEach(([key, value]) => {
-        formDataToSend.append(key, value ?? ""); // Ensure empty fields don't break
+        formDataToSend.append(key, value ?? "");
       });
 
-      // 2️⃣ Append uploaded documents (if any)
+      // Append transaction type and application number
+      formDataToSend.append("transactionType", transactionType);
+      formDataToSend.append("applicationNumber", applicationNumber);
+
+      // Append uploaded documents
       if (documents && Object.keys(documents).length > 0) {
         Object.values(documents).forEach((file) => {
           formDataToSend.append("documents", file);
         });
       }
 
-      // 3️⃣ Append assessment and payment (if user already calculated)
-      if (assessmentData) {
-        formDataToSend.append("assessment", JSON.stringify(assessmentData));
-      }
-
-      if (paymentMethod) {
-        formDataToSend.append("paymentMethod", paymentMethod);
-        formDataToSend.append(
-          "paymentDetails",
-          JSON.stringify(paymentDetails || {})
-        );
-      }
-
-      // 4️⃣ Attach JWT token for authentication
       const token = localStorage.getItem("token");
       if (!token) {
         showErrorToast("You are not logged in. Please log in first.");
-        setIsSubmitting(false);
         return;
       }
 
-      // 5️⃣ Send POST request to API
+      // Submit to application-only endpoint
+      const response = await fetch(
+        "http://localhost:5000/api/business/submit-application",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formDataToSend,
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setApplicationId(data.applicationId);
+        setShowApprovalModal(true);
+        setApprovalStatus("pending");
+        console.log("Application submitted successfully:", data);
+      } else {
+        showErrorToast(data.message || "Submission failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Application submission failed:", error);
+      showErrorToast(
+        "Server error. Please check your connection and try again."
+      );
+    } finally {
+      setIsSubmittingApplication(false);
+    }
+  };
+
+  // Handle payment submission (Step 6 - NEW only)
+  const handlePaymentSubmit = async (method, details) => {
+    try {
+      setIsSubmittingPayment(true);
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        showErrorToast("You are not logged in. Please log in first.");
+        return;
+      }
+
+      // Build payment payload - assessmentData is now calculated in backend
+      const paymentData = {
+        applicationId,
+        paymentMethod: method,
+        paymentDetails: details,
+      };
+
+      console.log("📦 DEBUG: Final Payment Data Payload", paymentData);
+
+      const response = await fetch(
+        "http://localhost:5000/api/business/submit-payment",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(paymentData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setShowSuccessModal(true);
+        console.log("✅ Payment submitted successfully:", data);
+
+        // Log the assessment data returned from backend
+        if (data.assessmentData) {
+          console.log("📋 Assessment Data:", data.assessmentData);
+        }
+      } else {
+        console.error("❌ Payment submission failed:", data);
+        showErrorToast(data.message || "Payment submission failed.");
+      }
+    } catch (error) {
+      console.error("💥 Payment submission failed:", error);
+      showErrorToast(
+        "Server error. Please check your connection and try again."
+      );
+    } finally {
+      setIsSubmittingPayment(false);
+    }
+  };
+
+  // Handle regular submission (for non-NEW transactions)
+  const handleRegularSubmit = async () => {
+    try {
+      setIsSubmittingApplication(true);
+
+      const formDataToSend = new FormData();
+
+      Object.entries(formData).forEach(([key, value]) => {
+        formDataToSend.append(key, value ?? "");
+      });
+
+      formDataToSend.append("transactionType", transactionType);
+      formDataToSend.append("applicationNumber", applicationNumber);
+
+      if (documents && Object.keys(documents).length > 0) {
+        Object.values(documents).forEach((file) => {
+          formDataToSend.append("documents", file);
+        });
+      }
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        showErrorToast("You are not logged in. Please log in first.");
+        return;
+      }
+
       const response = await fetch(
         "http://localhost:5000/api/business/submit",
         {
@@ -458,7 +612,6 @@ const BusinessApplication = () => {
 
       const data = await response.json();
 
-      // 6️⃣ Handle response
       if (response.ok) {
         setShowSuccessModal(true);
         console.log("Submission successful:", data);
@@ -471,13 +624,98 @@ const BusinessApplication = () => {
         "Server error. Please check your connection and try again."
       );
     } finally {
-      setIsSubmitting(false);
+      setIsSubmittingApplication(false);
     }
   };
 
+  const handleGoToDashboard = () => {
+    setShowSuccessModal(false);
+    navigate("/user-dashboard", { replace: true });
+  };
+
+  // Approval Modal Component
+  const ApprovalModal = () =>
+    showApprovalModal && (
+      <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div
+          className="bg-white rounded-2xl p-8 max-w-md w-full text-center"
+          style={{ animation: "scaleIn 0.3s ease-out" }}
+        >
+          {approvalStatus === "pending" && (
+            <>
+              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="w-8 h-8 text-yellow-600 animate-pulse" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                Awaiting Admin Approval
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Your application has been submitted and is currently under
+                review.
+              </p>
+              <p className="text-sm text-gray-500 mb-6">
+                Application Number:{" "}
+                <span className="font-semibold text-teal-600">
+                  {applicationNumber}
+                </span>
+              </p>
+              <div className="flex justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+              </div>
+            </>
+          )}
+
+          {approvalStatus === "approved" && (
+            <>
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                Application Approved!
+              </h3>
+              <p className="text-gray-600 mb-4">{approvalMessage}</p>
+              <p className="text-sm text-gray-500 mb-4">
+                Proceeding to assessment...
+              </p>
+            </>
+          )}
+
+          {approvalStatus === "rejected" && (
+            <>
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <XCircle className="w-8 h-8 text-red-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                Application Rejected
+              </h3>
+              <p className="text-gray-600 mb-4">{approvalMessage}</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowApprovalModal(false);
+                    setStep(3); // Go back to form
+                  }}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+                >
+                  Revise Application
+                </button>
+                <button
+                  onClick={handleGoToDashboard}
+                  className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+                >
+                  Go to Dashboard
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+
+  // Success Modal Component
   const SuccessModal = () =>
     showSuccessModal && (
-      <div className="fixed inset-0 bg-white bg-opacity-20 backdrop-blur-md flex items-center justify-center z-50 p-4 ">
+      <div className="fixed inset-0 bg-white bg-opacity-20 backdrop-blur-md flex items-center justify-center z-50 p-4">
         <div
           className="bg-white rounded-2xl p-8 max-w-md w-full text-center"
           style={{ animation: "scaleIn 0.3s ease-out" }}
@@ -499,11 +737,11 @@ const BusinessApplication = () => {
           </div>
 
           <h3 className="text-2xl font-bold text-gray-900 mb-2">
-            Application Submitted!
+            Application Completed!
           </h3>
 
           <p className="text-gray-600 mb-2">
-            Your business application has been successfully submitted.
+            Your business application has been successfully completed.
           </p>
           <p className="text-sm text-gray-500 mb-6">
             Application Number:{" "}
@@ -536,7 +774,7 @@ const BusinessApplication = () => {
   }, []);
 
   return (
-    <div className="flex h-screen bg-white ">
+    <div className="flex h-screen bg-white">
       <SidebarCitizen isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
 
       <div className="flex flex-1 flex-col">
@@ -663,6 +901,8 @@ const BusinessApplication = () => {
                   applicationNumber={applicationNumber}
                   formData={formData}
                   documents={documents}
+                  onSubmit={handleApplicationSubmit}
+                  isSubmitting={isSubmittingApplication}
                 />
               )}
 
@@ -672,8 +912,8 @@ const BusinessApplication = () => {
                   applicationNumber={applicationNumber}
                   formData={formData}
                   documents={documents}
-                  onSubmit={handleSubmit}
-                  isSubmitting={isSubmitting}
+                  onSubmit={handleRegularSubmit}
+                  isSubmitting={isSubmittingApplication}
                 />
               )}
 
@@ -690,9 +930,15 @@ const BusinessApplication = () => {
                 <PaymentMethod
                   applicationNumber={applicationNumber}
                   assessmentData={assessmentData}
-                  onPaymentMethodSelect={handlePaymentMethodSelect}
-                  onSubmit={handleSubmit}
-                  isSubmitting={isSubmitting}
+                  onPaymentMethodSelect={(method, details) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      paymentMethod: method,
+                      paymentDetails: details,
+                    }));
+                  }}
+                  onSubmit={handlePaymentSubmit}
+                  isSubmitting={isSubmittingPayment}
                 />
               )}
             </div>
@@ -788,7 +1034,6 @@ const BusinessApplication = () => {
                           {((step === 3 && transactionType !== "NEW") ||
                             (step === 4 && transactionType !== "NEW") ||
                             (step === 3 && transactionType === "NEW") ||
-                            (step === 4 && transactionType === "NEW") ||
                             (step === 5 && transactionType === "NEW")) && (
                             <button
                               type="button"
@@ -866,7 +1111,6 @@ const BusinessApplication = () => {
                   {((step === 3 && transactionType !== "NEW") ||
                     (step === 4 && transactionType !== "NEW") ||
                     (step === 3 && transactionType === "NEW") ||
-                    (step === 4 && transactionType === "NEW") ||
                     (step === 5 && transactionType === "NEW")) && (
                     <button
                       type="button"
@@ -891,6 +1135,7 @@ const BusinessApplication = () => {
         </div>
       </div>
 
+      <ApprovalModal />
       <SuccessModal />
     </div>
   );

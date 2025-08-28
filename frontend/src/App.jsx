@@ -5,6 +5,7 @@ import LandingPage from "./UserPanel/LandingPage";
 import { Toaster } from "sonner";
 import SuperAdminPage from "./SuperAdminPanel/SuperAdminApproval";
 import AdminPage from "./AdminPanel/AdminLandingPage";
+import DocumentPage from "./AdminPanel/DocumentPage";
 import VerifyEmailPage from "./authentication/VerifyEmailPage";
 import BusinessApplication from "./UserPanel/MyApplication/BusinessApplication";
 import EntryPage from "./EntryPanel/EntryPage";
@@ -28,6 +29,7 @@ const App = () => {
         <Route path="/cashier-dashboard" element={<CashierPanel />} />
         <Route path="/superadmin" element={<SuperAdminPage />} />
         <Route path="/admin-dashboard" element={<AdminPage />} />
+        <Route path="/documents" element={<DocumentPage />} />
         <Route path="/verify" element={<VerifyEmailPage />} />
         <Route path="/business-application" element={<BusinessApplication />} />
         <Route path="/permit-release" element={<PermitRelease />} />

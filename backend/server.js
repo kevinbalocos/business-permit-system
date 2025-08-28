@@ -25,8 +25,10 @@ app.use(bodyParser.json());
 
 // mount business routes
 const businessRoutes = require("./routes/businessRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 app.use("/api/business", businessRoutes);
 app.use("/uploads", express.static("uploads"));
+app.use("/api/admin", adminRoutes);
 
 /* ----------------------
    utility: create default superadmin

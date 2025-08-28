@@ -42,7 +42,7 @@ const Navbar = () => {
               <span className="sm:hidden">Alaminos</span>
             </h1>
             <p className="text-xs sm:text-sm text-gray-600 truncate hidden sm:block">
-              Administrative Dashboard
+              BPLO Dashboard
             </p>
           </div>
         </div>
@@ -88,7 +88,7 @@ const Navbar = () => {
                 {/* User Info - Hide text on small screens */}
                 <div className="text-right hidden lg:block">
                   <p className="text-sm font-medium text-gray-900">Admin User</p>
-                  <p className="text-xs text-gray-600">Municipal Officer</p>
+                  <p className="text-xs text-gray-600">BPLO</p>
                 </div>
                 
                 {/* Avatar */}
@@ -104,7 +104,7 @@ const Navbar = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 animate-in fade-in-0 zoom-in-95 duration-200">
                   <div className="px-4 py-2 border-b border-gray-100 lg:hidden">
                     <p className="text-sm font-medium text-gray-900">Admin User</p>
-                    <p className="text-xs text-gray-600">Municipal Officer</p>
+                    <p className="text-xs text-gray-600">BPLO</p>
                   </div>
                   <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-700 flex items-center space-x-2 transition-colors duration-200">
                     <User className="w-4 h-4" />

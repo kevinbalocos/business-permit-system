@@ -5,61 +5,67 @@ const Assessment = ({ applicationNumber, formData, onAssessmentGenerated }) => {
   const [assessmentData, setAssessmentData] = useState(null);
   const [isGenerating, setIsGenerating] = useState(true);
 
-  // Calculate fees based on business data
-  const calculateFees = () => {
-    const baseFee = 500; // Base application fee
-    const businessAreaFee = parseFloat(formData.businessArea || 0) * 10; // Per sqm
-    const employeeFee = (
-      (parseInt(formData.maleEmployees || 0) + parseInt(formData.femaleEmployees || 0)) * 50
-    ); // Per employee
-    const vehicleFee = (
-      (parseInt(formData.vanDeliveryVehicles || 0) * 200) +
-      (parseInt(formData.truckDeliveryVehicles || 0) * 300) +
-      (parseInt(formData.motorcycleDeliveryVehicles || 0) * 100)
-    );
-    
-    const capitalizationFee = Math.min(parseFloat(formData.totalCapitalization || 0) * 0.001, 5000);
-    
-    const processingFee = 150;
-    const documentStampTax = 30;
-    
-    const subtotal = baseFee + businessAreaFee + employeeFee + vehicleFee + capitalizationFee;
-    const vat = subtotal * 0.12; // 12% VAT
-    const total = subtotal + vat + processingFee + documentStampTax;
-
+  // Fixed assessment fees based on Electronic Statement of Account
+  const getFixedAssessmentFees = () => {
     return {
-      baseFee,
-      businessAreaFee,
-      employeeFee,
-      vehicleFee,
-      capitalizationFee,
-      subtotal,
-      vat,
-      processingFee,
-      documentStampTax,
-      total: Math.round(total * 100) / 100, // Round to 2 decimal places
+      business_permit_fee: 1000.00, // BUSINESS TAX - SERVICE ACTIVITIES
+      mayors_permit_fee: 100.00, // MAYOR'S PERMIT FEE - SERVICE ACTIVITIES
+      sanitary_permit_fee: 60.00, // ANNUAL INSPECTION FEE - SANITARY
+      fire_safety_fee: 536.00, // ANNUAL INSPECTION FEE - ELECTRICAL
+      environmental_fee: 120.00, // ANNUAL INSPECTION FEE - MECHANICAL
+      capitalization_fee: 120.00, // ANNUAL INSPECTION FEE - BUILDING
+      employee_fee: 72.00, // ANNUAL BUILDING INSPECTION FEE - SIGNAGE
+      delivery_vehicle_fee: 350.00, // BARANGAY CLEARANCE FEE
+      late_penalty: 0.00,
+      interest_charges: 0.00,
+      additional_fees: {
+        garbage_fee: 360.00,
+        health_cert_fee: 8.00,
+        occupational_fee: 100.00,
+        sanitary_inspection_fee: 300.00,
+        solid_waste_certification_fee: 80.00,
+        verification_fee: 100.00,
+        zoning_fee: 600.00
+      }
     };
   };
 
   useEffect(() => {
     // Simulate assessment generation
     const timer = setTimeout(() => {
-      const fees = calculateFees();
+      const fees = getFixedAssessmentFees();
+      
+      // Calculate totals
+      const baseFees = fees.business_permit_fee + fees.mayors_permit_fee + 
+                      fees.sanitary_permit_fee + fees.fire_safety_fee + 
+                      fees.environmental_fee + fees.capitalization_fee + 
+                      fees.employee_fee + fees.delivery_vehicle_fee;
+      
+      const additionalFeesTotal = Object.values(fees.additional_fees).reduce((sum, val) => sum + val, 0);
+      const subtotal = baseFees + additionalFeesTotal;
+      const tax_amount = 0; // No tax shown in the statement
+      const total_amount = subtotal;
+
       const assessment = {
         applicationNumber,
         dateGenerated: new Date().toISOString(),
         businessName: formData.businessName,
         businessType: formData.businessType,
         lineOfBusiness: formData.lineOfBusiness,
-        fees,
-        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(), // 30 days from now
-        validUntil: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toLocaleDateString(), // 60 days from now
+        fees: {
+          ...fees,
+          subtotal,
+          tax_amount,
+          total_amount
+        },
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+        validUntil: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toLocaleDateString(),
       };
       
       setAssessmentData(assessment);
       setIsGenerating(false);
       onAssessmentGenerated(assessment);
-    }, 2000); // 2 second delay for loading effect
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, [applicationNumber, formData, onAssessmentGenerated]);
@@ -79,7 +85,7 @@ const Assessment = ({ applicationNumber, formData, onAssessmentGenerated }) => {
               Generating Assessment
             </h3>
             <p className="text-gray-600">
-              Please wait while we calculate your permit fees...
+              Please wait while we prepare your Electronic Statement of Account...
             </p>
           </div>
         </div>
@@ -96,23 +102,23 @@ const Assessment = ({ applicationNumber, formData, onAssessmentGenerated }) => {
         <div className="flex items-center gap-3 mb-4">
           <Calculator className="w-8 h-8" />
           <div>
-            <h2 className="text-2xl font-bold">Step 2: Business Permit Assessment</h2>
+            <h2 className="text-2xl font-bold">Electronic Statement of Account</h2>
             <p className="text-teal-100">Application #{assessmentData.applicationNumber}</p>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>
-            <p className="text-teal-200">Date Generated</p>
+            <p className="text-teal-200">Status</p>
+            <p className="font-semibold">NEW</p>
+          </div>
+          <div>
+            <p className="text-teal-200">Billing Date</p>
             <p className="font-semibold">{new Date(assessmentData.dateGenerated).toLocaleDateString()}</p>
           </div>
           <div>
-            <p className="text-teal-200">Due Date</p>
-            <p className="font-semibold">{assessmentData.dueDate}</p>
-          </div>
-          <div>
-            <p className="text-teal-200">Valid Until</p>
-            <p className="font-semibold">{assessmentData.validUntil}</p>
+            <p className="text-teal-200">Period</p>
+            <p className="font-semibold">3rd - 4th Quarter 2025</p>
           </div>
         </div>
       </div>
@@ -143,113 +149,117 @@ const Assessment = ({ applicationNumber, formData, onAssessmentGenerated }) => {
       <div className="bg-white p-6 rounded-lg shadow-sm border">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <FileText className="w-5 h-5 text-teal-600" />
-          Fee Breakdown
+          Fee Breakdown (Based on Electronic Statement of Account)
         </h3>
         
         <div className="space-y-3">
-          {/* Base Fee */}
+          {/* Main Fees */}
           <div className="flex justify-between items-center py-2 border-b border-gray-100">
             <div>
-              <p className="font-medium">Base Application Fee</p>
-              <p className="text-sm text-gray-600">Standard processing fee</p>
+              <p className="font-medium">Business Tax - Service Activities</p>
+              <p className="text-sm text-gray-600">Related to printing, N.E.C.</p>
             </div>
-            <p className="font-semibold">₱{assessmentData.fees.baseFee.toFixed(2)}</p>
+            <p className="font-semibold">₱{assessmentData.fees.business_permit_fee.toFixed(2)}</p>
           </div>
 
-          {/* Business Area Fee */}
-          {assessmentData.fees.businessAreaFee > 0 && (
-            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-              <div>
-                <p className="font-medium">Business Area Fee</p>
-                <p className="text-sm text-gray-600">
-                  {formData.businessArea} sqm × ₱10.00
-                </p>
-              </div>
-              <p className="font-semibold">₱{assessmentData.fees.businessAreaFee.toFixed(2)}</p>
-            </div>
-          )}
-
-          {/* Employee Fee */}
-          {assessmentData.fees.employeeFee > 0 && (
-            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-              <div>
-                <p className="font-medium">Employee Fee</p>
-                <p className="text-sm text-gray-600">
-                  {(parseInt(formData.maleEmployees || 0) + parseInt(formData.femaleEmployees || 0))} employees × ₱50.00
-                </p>
-              </div>
-              <p className="font-semibold">₱{assessmentData.fees.employeeFee.toFixed(2)}</p>
-            </div>
-          )}
-
-          {/* Vehicle Fee */}
-          {assessmentData.fees.vehicleFee > 0 && (
-            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-              <div>
-                <p className="font-medium">Delivery Vehicle Fee</p>
-                <p className="text-sm text-gray-600">
-                  Van: {formData.vanDeliveryVehicles || 0}, Truck: {formData.truckDeliveryVehicles || 0}, 
-                  Motorcycle: {formData.motorcycleDeliveryVehicles || 0}
-                </p>
-              </div>
-              <p className="font-semibold">₱{assessmentData.fees.vehicleFee.toFixed(2)}</p>
-            </div>
-          )}
-
-          {/* Capitalization Fee */}
-          {assessmentData.fees.capitalizationFee > 0 && (
-            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-              <div>
-                <p className="font-medium">Capitalization Fee</p>
-                <p className="text-sm text-gray-600">
-                  0.1% of ₱{parseFloat(formData.totalCapitalization || 0).toLocaleString()} (max ₱5,000)
-                </p>
-              </div>
-              <p className="font-semibold">₱{assessmentData.fees.capitalizationFee.toFixed(2)}</p>
-            </div>
-          )}
-
-          {/* Subtotal */}
-          <div className="flex justify-between items-center py-2 border-b-2 border-gray-300">
-            <p className="font-semibold">Subtotal</p>
-            <p className="font-semibold">₱{assessmentData.fees.subtotal.toFixed(2)}</p>
-          </div>
-
-          {/* VAT */}
           <div className="flex justify-between items-center py-2 border-b border-gray-100">
             <div>
-              <p className="font-medium">Value Added Tax (12%)</p>
-              <p className="text-sm text-gray-600">Applicable to taxable fees</p>
+              <p className="font-medium">Mayor's Permit Fee - Service</p>
+              <p className="text-sm text-gray-600">Activities related to printing, N.E.C.</p>
             </div>
-            <p className="font-semibold">₱{assessmentData.fees.vat.toFixed(2)}</p>
+            <p className="font-semibold">₱{assessmentData.fees.mayors_permit_fee.toFixed(2)}</p>
           </div>
 
-          {/* Processing Fee */}
           <div className="flex justify-between items-center py-2 border-b border-gray-100">
             <div>
-              <p className="font-medium">Processing Fee</p>
-              <p className="text-sm text-gray-600">Document processing</p>
+              <p className="font-medium">Annual Inspection Fee - Building</p>
             </div>
-            <p className="font-semibold">₱{assessmentData.fees.processingFee.toFixed(2)}</p>
+            <p className="font-semibold">₱{assessmentData.fees.capitalization_fee.toFixed(2)}</p>
           </div>
 
-          {/* Document Stamp Tax */}
-          <div className="flex justify-between items-center py-2 border-b-2 border-gray-300">
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
             <div>
-              <p className="font-medium">Document Stamp Tax</p>
-              <p className="text-sm text-gray-600">Government tax</p>
+              <p className="font-medium">Annual Inspection Fee - Electrical</p>
             </div>
-            <p className="font-semibold">₱{assessmentData.fees.documentStampTax.toFixed(2)}</p>
+            <p className="font-semibold">₱{assessmentData.fees.fire_safety_fee.toFixed(2)}</p>
+          </div>
+
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+            <div>
+              <p className="font-medium">Annual Inspection Fee - Mechanical</p>
+            </div>
+            <p className="font-semibold">₱{assessmentData.fees.environmental_fee.toFixed(2)}</p>
+          </div>
+
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+            <div>
+              <p className="font-medium">Annual Inspection Fee - Sanitary</p>
+            </div>
+            <p className="font-semibold">₱{assessmentData.fees.sanitary_permit_fee.toFixed(2)}</p>
+          </div>
+
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+            <div>
+              <p className="font-medium">Annual Building Inspection Fee - Signage</p>
+            </div>
+            <p className="font-semibold">₱{assessmentData.fees.employee_fee.toFixed(2)}</p>
+          </div>
+
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+            <div>
+              <p className="font-medium">Barangay Clearance Fee</p>
+            </div>
+            <p className="font-semibold">₱{assessmentData.fees.delivery_vehicle_fee.toFixed(2)}</p>
+          </div>
+
+          {/* Additional Fees */}
+          <div className="pt-4">
+            <h4 className="font-semibold text-gray-800 mb-2">Additional Required Fees</h4>
+            
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <p className="font-medium">Garbage Fee</p>
+              <p className="font-semibold">₱{assessmentData.fees.additional_fees.garbage_fee.toFixed(2)}</p>
+            </div>
+
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <p className="font-medium">Health Cert/Sworn Statement Fee</p>
+              <p className="font-semibold">₱{assessmentData.fees.additional_fees.health_cert_fee.toFixed(2)}</p>
+            </div>
+
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <p className="font-medium">Occupational Fee</p>
+              <p className="font-semibold">₱{assessmentData.fees.additional_fees.occupational_fee.toFixed(2)}</p>
+            </div>
+
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <p className="font-medium">Sanitary Inspection Fee</p>
+              <p className="font-semibold">₱{assessmentData.fees.additional_fees.sanitary_inspection_fee.toFixed(2)}</p>
+            </div>
+
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <p className="font-medium">Solid Waste Certification Fee</p>
+              <p className="font-semibold">₱{assessmentData.fees.additional_fees.solid_waste_certification_fee.toFixed(2)}</p>
+            </div>
+
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <p className="font-medium">Verification Fee</p>
+              <p className="font-semibold">₱{assessmentData.fees.additional_fees.verification_fee.toFixed(2)}</p>
+            </div>
+
+            <div className="flex justify-between items-center py-2 border-b-2 border-gray-300">
+              <p className="font-medium">Zoning Fee</p>
+              <p className="font-semibold">₱{assessmentData.fees.additional_fees.zoning_fee.toFixed(2)}</p>
+            </div>
           </div>
 
           {/* Total */}
-          <div className="flex justify-between items-center py-4 bg-teal-50 px-4 rounded-lg">
+          <div className="flex justify-between items-center py-4 bg-teal-50 px-4 rounded-lg mt-4">
             <div>
               <p className="text-xl font-bold text-teal-900">TOTAL AMOUNT DUE</p>
               <p className="text-sm text-teal-700">All fees inclusive</p>
             </div>
             <p className="text-2xl font-bold text-teal-900">
-              ₱{assessmentData.fees.total.toFixed(2)}
+              ₱{assessmentData.fees.total_amount.toFixed(2)}
             </p>
           </div>
         </div>
@@ -262,9 +272,10 @@ const Assessment = ({ applicationNumber, formData, onAssessmentGenerated }) => {
           <div>
             <h4 className="font-semibold text-amber-900 mb-2">Important Notice</h4>
             <ul className="text-sm text-amber-800 space-y-1">
-              <li>• This assessment is valid until {assessmentData.validUntil}</li>
+              <li>• This Electronic Statement of Account is for NEW business permit application</li>
               <li>• Payment must be made by {assessmentData.dueDate} to avoid penalties</li>
-              <li>• All fees are subject to local government regulations</li>
+              <li>• All fees are based on City of San Pablo official rates for 2025</li>
+              <li>• Period covered: 3rd - 4th Quarter 2025</li>
               <li>• Additional requirements may apply based on business classification</li>
             </ul>
           </div>
