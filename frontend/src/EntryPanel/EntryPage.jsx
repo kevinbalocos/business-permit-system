@@ -120,7 +120,7 @@ export default function EnhancedHomepage() {
     {
       id: "hero",
       alignment: "left",
-      title: "Datalink Creative Solution Incorporation",
+      title: "Business Permits & Licensing System",
       subtitle:
         "Experience the future of permit processing with the Municipality of Alaminos. Streamlined, secure, and completely digital.",
       description:
