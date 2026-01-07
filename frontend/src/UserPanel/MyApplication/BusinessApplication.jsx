@@ -111,6 +111,9 @@ const BusinessApplication = () => {
   const draggingRef = useRef(false);
   const dragStateRef = useRef(null);
 
+  // new: ref for the main scrollable content so we can reset scroll on step change
+  const mainRef = useRef(null);
+
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
   // Mobile footer and icon position logic
@@ -379,6 +382,20 @@ const BusinessApplication = () => {
     setStep(1);
     setTransactionType("");
   };
+
+  // When `step` changes, scroll the main content area to top so user doesn't have to manually scroll
+  useEffect(() => {
+    try {
+      if (mainRef && mainRef.current && typeof mainRef.current.scrollTo === "function") {
+        mainRef.current.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+      } else if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+      }
+    } catch (e) {
+      // fallback
+      if (typeof window !== "undefined") window.scrollTo(0, 0);
+    }
+  }, [step]);
 
   // Polling for approval status
   const pollApprovalStatus = async () => {
@@ -654,7 +671,7 @@ const BusinessApplication = () => {
                 review.
               </p>
               <p className="text-sm text-gray-500 mb-6">
-                Application Number:{" "}
+                Application Number: {" "}
                 <span className="font-semibold text-teal-600">
                   {applicationNumber}
                 </span>
@@ -744,7 +761,7 @@ const BusinessApplication = () => {
             Your business application has been successfully completed.
           </p>
           <p className="text-sm text-gray-500 mb-6">
-            Application Number:{" "}
+            Application Number: {" "}
             <span className="font-semibold text-teal-600">
               {applicationNumber}
             </span>
@@ -783,7 +800,7 @@ const BusinessApplication = () => {
         </div>
 
         <div className="flex flex-1 overflow-hidden">
-          <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 flex flex-col mb-23 sm:mb-0">
+          <main ref={mainRef} className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 flex flex-col mb-23 sm:mb-0">
             <div className="flex-1">
               {/* Step 1: Select Transaction Type */}
               {step === 1 && (
@@ -1123,6 +1140,14 @@ const BusinessApplication = () => {
                 </div>
               </div>
             </div>
+
+            <aside className="bg-white w-72 hidden lg:flex flex-col overflow-y-auto p-3 sm:p-4">
+              <RightSidebar
+                recentActivities={recentActivities}
+                upcomingEvents={upcomingEvents}
+                reminders={reminders}
+              />
+            </aside>
           </main>
 
           <aside className="bg-white w-72 hidden lg:flex flex-col overflow-y-auto p-3 sm:p-4">
