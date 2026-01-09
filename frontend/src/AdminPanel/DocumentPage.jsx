@@ -36,6 +36,9 @@ const DocumentsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Mobile-only: toggle right (payment) panel visibility
+  const [showPaymentPanelMobile, setShowPaymentPanelMobile] = useState(false);
+
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
@@ -52,7 +55,7 @@ const DocumentsPage = () => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Use token from storage
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -412,12 +415,8 @@ const DocumentsPage = () => {
               <div className="bg-white/95 backdrop-blur-sm p-3 sm:p-4 rounded-lg shadow-sm border border-white/20">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs sm:text-sm text-gray-600">
-                      Pending Review
-                    </p>
-                    <p className="text-lg sm:text-2xl font-semibold text-yellow-600">
-                      {pendingCount}
-                    </p>
+                    <p className="text-xs sm:text-sm text-gray-600">Pending Review</p>
+                    <p className="text-lg sm:text-2xl font-semibold text-yellow-600">{pendingCount}</p>
                   </div>
                   <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500" />
                 </div>
@@ -426,12 +425,8 @@ const DocumentsPage = () => {
               <div className="bg-white/95 backdrop-blur-sm p-3 sm:p-4 rounded-lg shadow-sm border border-white/20">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs sm:text-sm text-gray-600">
-                      Under Review
-                    </p>
-                    <p className="text-lg sm:text-2xl font-semibold text-blue-600">
-                      {underReviewCount}
-                    </p>
+                    <p className="text-xs sm:text-sm text-gray-600">Under Review</p>
+                    <p className="text-lg sm:text-2xl font-semibold text-blue-600">{underReviewCount}</p>
                   </div>
                   <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" />
                 </div>
@@ -441,9 +436,7 @@ const DocumentsPage = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs sm:text-sm text-gray-600">Approved</p>
-                    <p className="text-lg sm:text-2xl font-semibold text-green-600">
-                      {approvedCount}
-                    </p>
+                    <p className="text-lg sm:text-2xl font-semibold text-green-600">{approvedCount}</p>
                   </div>
                   <Check className="w-6 h-6 sm:w-8 sm:h-8 text-green-500" />
                 </div>
@@ -453,9 +446,7 @@ const DocumentsPage = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs sm:text-sm text-gray-600">Rejected</p>
-                    <p className="text-lg sm:text-2xl font-semibold text-red-600">
-                      {rejectedCount}
-                    </p>
+                    <p className="text-lg sm:text-2xl font-semibold text-red-600">{rejectedCount}</p>
                   </div>
                   <X className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
                 </div>
@@ -470,9 +461,7 @@ const DocumentsPage = () => {
                 <div className="p-8 text-center">
                   <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">No applications found</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Try adjusting your search or filter criteria
-                  </p>
+                  <p className="text-sm text-gray-500 mt-2">Try adjusting your search or filter criteria</p>
                 </div>
               ) : (
                 <>
@@ -481,128 +470,51 @@ const DocumentsPage = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Application Details
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Applicant
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Date Submitted
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Priority
-                          </th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
-                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Application Details</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applicant</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Submitted</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {filteredDocuments.map((document) => (
-                          <tr
-                            key={document.id}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
+                          <tr key={document.id} className="hover:bg-gray-50 transition-colors">
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
-                                <div className="flex-shrink-0">
-                                  {getStatusIcon(document.status)}
-                                </div>
+                                <div className="flex-shrink-0">{getStatusIcon(document.status)}</div>
                                 <div className="ml-3">
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {document.name}
-                                  </div>
-                                  <div className="text-sm text-gray-500">
-                                    {document.type} •{" "}
-                                    {document.applicationNumber}
-                                  </div>
+                                  <div className="text-sm font-medium text-gray-900">{document.name}</div>
+                                  <div className="text-sm text-gray-500">{document.type} • {document.applicationNumber}</div>
                                 </div>
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {document.submittedBy}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {document.email}
-                              </div>
+                              <div className="text-sm text-gray-900">{document.submittedBy}</div>
+                              <div className="text-sm text-gray-500">{document.email}</div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span
-                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
-                                  document.status
-                                )}`}
-                              >
+                              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(document.status)}`}>
                                 {getStatusIcon(document.status)}
-                                {document.status
-                                  .replace("_", " ")
-                                  .toUpperCase()}
+                                {document.status.replace("_", " ").toUpperCase()}
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {new Date(
-                                document.dateSubmitted
-                              ).toLocaleDateString()}
-                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(document.dateSubmitted).toLocaleDateString()}</td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(
-                                  document.priority
-                                )}`}
-                              >
-                                {document.priority.toUpperCase()}
-                              </span>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(document.priority)}`}>{document.priority.toUpperCase()}</span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                               <div className="flex items-center gap-2 justify-end">
-                                <button
-                                  onClick={() => handleViewDocument(document)}
-                                  className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
-                                  title="View Document"
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleDownloadDocument(document)
-                                  }
-                                  className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50"
-                                  title="Download"
-                                >
-                                  <Download className="w-4 h-4" />
-                                </button>
+                                <button onClick={() => handleViewDocument(document)} className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50" title="View Document"><Eye className="w-4 h-4" /></button>
+                                <button onClick={() => handleDownloadDocument(document)} className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50" title="Download"><Download className="w-4 h-4" /></button>
                                 {document.status === "pending" && (
                                   <>
-                                    <button
-                                      onClick={() =>
-                                        handleDocumentAction(
-                                          document,
-                                          "approve"
-                                        )
-                                      }
-                                      className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
-                                      title="Approve"
-                                    >
-                                      <Check className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                      onClick={() =>
-                                        handleDocumentAction(document, "reject")
-                                      }
-                                      className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
-                                      title="Reject"
-                                    >
-                                      <X className="w-4 h-4" />
-                                    </button>
+                                    <button onClick={() => handleDocumentAction(document, "approve")} className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50" title="Approve"><Check className="w-4 h-4" /></button>
+                                    <button onClick={() => handleDocumentAction(document, "reject")} className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50" title="Reject"><X className="w-4 h-4" /></button>
                                   </>
                                 )}
-                                <button className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50">
-                                  <MoreVertical className="w-4 h-4" />
-                                </button>
+                                <button className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50"><MoreVertical className="w-4 h-4" /></button>
                               </div>
                             </td>
                           </tr>
@@ -614,104 +526,49 @@ const DocumentsPage = () => {
                   {/* Mobile Card View */}
                   <div className="lg:hidden divide-y divide-gray-200">
                     {filteredDocuments.map((document) => (
-                      <div
-                        key={document.id}
-                        className="p-4 hover:bg-gray-50 transition-colors"
-                      >
+                      <div key={document.id} className="p-4 hover:bg-gray-50 transition-colors">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-2">
                             {getStatusIcon(document.status)}
                             <div>
-                              <h3 className="text-sm font-medium text-gray-900 line-clamp-1">
-                                {document.name}
-                              </h3>
-                              <p className="text-xs text-gray-500">
-                                {document.applicationNumber}
-                              </p>
+                              <h3 className="text-sm font-medium text-gray-900 line-clamp-1">{document.name}</h3>
+                              <p className="text-xs text-gray-500">{document.applicationNumber}</p>
                             </div>
                           </div>
-                          <button className="text-gray-400 hover:text-gray-600">
-                            <MoreVertical className="w-5 h-5" />
-                          </button>
+                          <button className="text-gray-400 hover:text-gray-600"><MoreVertical className="w-5 h-5" /></button>
                         </div>
 
                         <div className="space-y-2 mb-3">
                           <div className="flex items-center gap-2 text-sm">
                             <User className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-900">
-                              {document.submittedBy}
-                            </span>
+                            <span className="text-gray-900">{document.submittedBy}</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
                             <Calendar className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-600">
-                              {new Date(
-                                document.dateSubmitted
-                              ).toLocaleDateString()}
-                            </span>
+                            <span className="text-gray-600">{new Date(document.dateSubmitted).toLocaleDateString()}</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
                             <FileText className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-600">
-                              {document.type}
-                            </span>
+                            <span className="text-gray-600">{document.type}</span>
                           </div>
                         </div>
 
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <span
-                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
-                                document.status
-                              )}`}
-                            >
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(document.status)}`}>
                               {getStatusIcon(document.status)}
                               {document.status.replace("_", " ").toUpperCase()}
                             </span>
-                            <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(
-                                document.priority
-                              )}`}
-                            >
-                              {document.priority.toUpperCase()}
-                            </span>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(document.priority)}`}>{document.priority.toUpperCase()}</span>
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => handleViewDocument(document)}
-                              className="text-blue-600 hover:text-blue-700 p-1 rounded hover:bg-blue-50"
-                              title="View Document"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDownloadDocument(document)}
-                              className="text-gray-600 hover:text-gray-700 p-1 rounded hover:bg-gray-50"
-                              title="Download"
-                            >
-                              <Download className="w-4 h-4" />
-                            </button>
+                            <button onClick={() => handleViewDocument(document)} className="text-blue-600 hover:text-blue-700 p-1 rounded hover:bg-blue-50" title="View Document"><Eye className="w-4 h-4" /></button>
+                            <button onClick={() => handleDownloadDocument(document)} className="text-gray-600 hover:text-gray-700 p-1 rounded hover:bg-gray-50" title="Download"><Download className="w-4 h-4" /></button>
                             {document.status === "pending" && (
                               <>
-                                <button
-                                  onClick={() =>
-                                    handleDocumentAction(document, "approve")
-                                  }
-                                  className="text-green-600 hover:text-green-700 p-1 rounded hover:bg-green-50"
-                                  title="Approve"
-                                >
-                                  <Check className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleDocumentAction(document, "reject")
-                                  }
-                                  className="text-red-600 hover:text-red-700 p-1 rounded hover:bg-red-50"
-                                  title="Reject"
-                                >
-                                  <X className="w-4 h-4" />
-                                </button>
+                                <button onClick={() => handleDocumentAction(document, "approve")} className="text-green-600 hover:text-green-700 p-1 rounded hover:bg-green-50" title="Approve"><Check className="w-4 h-4" /></button>
+                                <button onClick={() => handleDocumentAction(document, "reject")} className="text-red-600 hover:text-red-700 p-1 rounded hover:bg-red-50" title="Reject"><X className="w-4 h-4" /></button>
                               </>
                             )}
                           </div>
@@ -726,305 +583,254 @@ const DocumentsPage = () => {
         </main>
       </div>
 
-      {/* Document View Modal */}
+      {/* Document View Modal - FULL VIEW with 70/30 split */}
       {showDocumentModal && selectedDocument && (
-        <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-0 z-50">
+          {/* full-screen modal container */}
+          <div className="bg-white w-full h-full overflow-hidden md:rounded-lg shadow-xl flex flex-col">
+            {/* top bar - close + mobile payment toggle */}
+            <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
               <div>
-                <h3 className="text-lg font-medium text-gray-900">
-                  {selectedDocument.name}
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  {selectedDocument.applicationNumber} • {selectedDocument.type}
-                </p>
+                <h3 className="text-lg font-medium text-gray-900">{selectedDocument.name}</h3>
+                <p className="text-sm text-gray-500 mt-0.5">{selectedDocument.applicationNumber} • {selectedDocument.type}</p>
               </div>
-              <button
-                onClick={() => {
-                  setShowDocumentModal(false);
-                  setSelectedDocument(null);
-                }}
-                className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
+
+              <div className="flex items-center gap-2">
+                {/* mobile-only toggle for right panel */}
+                <button
+                  onClick={() => setShowPaymentPanelMobile((s) => !s)}
+                  className="md:hidden px-3 py-1 text-sm bg-gray-100 rounded-md border"
+                >
+                  {showPaymentPanelMobile ? 'Hide Payment' : 'Show Payment'}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowDocumentModal(false);
+                    setSelectedDocument(null);
+                    setShowPaymentPanelMobile(false);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
-            <div className="px-6 py-4 max-h-[70vh] overflow-y-auto">
-              <div className="space-y-6">
-                {/* Application Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Applicant Name
-                    </label>
-                    <p className="text-sm text-gray-900">
-                      {selectedDocument.submittedBy}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email
-                    </label>
-                    <p className="text-sm text-gray-900">
-                      {selectedDocument.email}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Application Type
-                    </label>
-                    <p className="text-sm text-gray-900">
-                      {selectedDocument.type}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Date Submitted
-                    </label>
-                    <p className="text-sm text-gray-900">
-                      {new Date(
-                        selectedDocument.dateSubmitted
-                      ).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Status
-                    </label>
-                    <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
-                        selectedDocument.status
-                      )}`}
-                    >
-                      {getStatusIcon(selectedDocument.status)}
-                      {selectedDocument.status.replace("_", " ").toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Priority
-                    </label>
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(
-                        selectedDocument.priority
-                      )}`}
-                    >
-                      {selectedDocument.priority.toUpperCase()}
-                    </span>
-                  </div>
-                </div>
+            {/* content: left 70% / right 30% */}
+            <div className="flex-1 flex flex-col md:flex-row h-full">
+              {/* left - 70% (on md and up) - main details and inputs */}
+              <div className="w-full md:w-[70%] p-6 overflow-y-auto">
+                <div className="space-y-6">
+                  {/* Application Info (inputs/read-only as requested) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Applicant Name</label>
+                      <input
+                        value={selectedDocument.submittedBy}
+                        readOnly
+                        className="text-sm text-gray-900 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <input
+                        value={selectedDocument.email}
+                        readOnly
+                        className="text-sm text-gray-900 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
+                      />
+                    </div>
 
-                {/* Business Details (if applicable) */}
-                {selectedDocument.businessName && (
-                  <div>
-                    <h4 className="text-lg font-medium text-gray-900 mb-3">
-                      Business Information
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Business Name
-                        </label>
-                        <p className="text-sm text-gray-900">
-                          {selectedDocument.businessName}
-                        </p>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Application Type</label>
+                      <input value={selectedDocument.type} readOnly className="text-sm text-gray-900 w-full px-3 py-2 border border-gray-300 rounded-md bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Date Submitted</label>
+                      <input value={new Date(selectedDocument.dateSubmitted).toLocaleDateString()} readOnly className="text-sm text-gray-900 w-full px-3 py-2 border border-gray-300 rounded-md bg-white" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                      <div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(selectedDocument.status)}`}>
+                        {getStatusIcon(selectedDocument.status)}
+                        {selectedDocument.status.replace("_", " ").toUpperCase()}
                       </div>
-                      {selectedDocument.businessAddress && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Business Address
-                          </label>
-                          <p className="text-sm text-gray-900">
-                            {selectedDocument.businessAddress}
-                          </p>
-                        </div>
-                      )}
-                      {selectedDocument.businessType && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Business Type
-                          </label>
-                          <p className="text-sm text-gray-900">
-                            {selectedDocument.businessType}
-                          </p>
-                        </div>
-                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                      <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(selectedDocument.priority)}`}>
+                        {selectedDocument.priority.toUpperCase()}
+                      </div>
                     </div>
                   </div>
-                )}
 
-                {/* Application Details */}
-                {selectedDocument.purpose && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Purpose
-                    </label>
-                    <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-md">
-                      {selectedDocument.purpose}
-                    </p>
-                  </div>
-                )}
-
-                {/* Documents/Attachments */}
-                {selectedDocument.documents &&
-                  selectedDocument.documents.length > 0 && (
+                  {/* Business Details (if applicable) */}
+                  {selectedDocument.businessName && (
                     <div>
-                      <h4 className="text-lg font-medium text-gray-900 mb-3">
-                        Attached Documents
-                      </h4>
+                      <h4 className="text-lg font-medium text-gray-900 mb-3">Business Information</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
+                          <input value={selectedDocument.businessName} readOnly className="text-sm text-gray-900 w-full px-3 py-2 border border-gray-300 rounded-md bg-white" />
+                        </div>
+                        {selectedDocument.businessAddress && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Business Address</label>
+                            <input value={selectedDocument.businessAddress} readOnly className="text-sm text-gray-900 w-full px-3 py-2 border border-gray-300 rounded-md bg-white" />
+                          </div>
+                        )}
+                        {selectedDocument.businessType && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Business Type</label>
+                            <input value={selectedDocument.businessType} readOnly className="text-sm text-gray-900 w-full px-3 py-2 border border-gray-300 rounded-md bg-white" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Purpose */}
+                  {selectedDocument.purpose && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Purpose</label>
+                      <textarea readOnly value={selectedDocument.purpose} className="text-sm text-gray-900 w-full px-3 py-2 border border-gray-300 rounded-md bg-white" rows={4} />
+                    </div>
+                  )}
+
+                  {/* Documents/Attachments */}
+                  {selectedDocument.documents && selectedDocument.documents.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-900 mb-3">Attached Documents</h4>
                       <div className="space-y-2">
                         {selectedDocument.documents.map((doc, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
-                          >
+                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
                             <div className="flex items-center gap-3">
                               <FileText className="w-5 h-5 text-gray-400" />
                               <div>
-                                <p className="text-sm font-medium text-gray-900">
-                                  {doc.name || `Document ${index + 1}`}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {doc.type || "File"}
-                                </p>
+                                <p className="text-sm font-medium text-gray-900">{doc.name || `Document ${index + 1}`}</p>
+                                <p className="text-xs text-gray-500">{doc.type || "File"}</p>
                               </div>
                             </div>
-                            <button
-                              onClick={() =>
-                                handleDownloadDocument(selectedDocument)
-                              }
-                              className="text-blue-600 hover:text-blue-700 p-1 rounded hover:bg-blue-50"
-                            >
-                              <Download className="w-4 h-4" />
-                            </button>
+                            <button onClick={() => handleDownloadDocument(selectedDocument)} className="text-blue-600 hover:text-blue-700 p-1 rounded hover:bg-blue-50"><Download className="w-4 h-4" /></button>
                           </div>
                         ))}
                       </div>
                     </div>
                   )}
 
-                {/* Admin Notes */}
-                {selectedDocument.adminNotes && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Admin Notes
-                    </label>
-                    <p className="text-sm text-gray-900 bg-blue-50 p-3 rounded-md">
-                      {selectedDocument.adminNotes}
-                    </p>
-                  </div>
-                )}
-
-                {/* Rejection Reason */}
-                {selectedDocument.rejectionReason && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Rejection Reason
-                    </label>
-                    <p className="text-sm text-gray-900 bg-red-50 p-3 rounded-md">
-                      {selectedDocument.rejectionReason}
-                    </p>
-                  </div>
-                )}
-
-                {/* Timeline */}
-                <div>
-                  <h4 className="text-lg font-medium text-gray-900 mb-3">
-                    Timeline
-                  </h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          Application Submitted
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(
-                            selectedDocument.dateSubmitted
-                          ).toLocaleString()}
-                        </p>
-                      </div>
+                  {/* Admin Notes / Rejection Reason */}
+                  {selectedDocument.adminNotes && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Admin Notes</label>
+                      <p className="text-sm text-gray-900 bg-blue-50 p-3 rounded-md">{selectedDocument.adminNotes}</p>
                     </div>
-                    {selectedDocument.reviewedDate && (
+                  )}
+
+                  {selectedDocument.rejectionReason && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Rejection Reason</label>
+                      <p className="text-sm text-gray-900 bg-red-50 p-3 rounded-md">{selectedDocument.rejectionReason}</p>
+                    </div>
+                  )}
+
+                  {/* Timeline */}
+                  <div>
+                    <h4 className="text-lg font-medium text-gray-900 mb-3">Timeline</h4>
+                    <div className="space-y-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            Under Review
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(
-                              selectedDocument.reviewedDate
-                            ).toLocaleString()}
-                          </p>
+                          <p className="text-sm font-medium text-gray-900">Application Submitted</p>
+                          <p className="text-xs text-gray-500">{new Date(selectedDocument.dateSubmitted).toLocaleString()}</p>
                         </div>
                       </div>
-                    )}
-                    {selectedDocument.approvedAt && (
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            Approved
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(
-                              selectedDocument.approvedAt
-                            ).toLocaleString()}
-                          </p>
+                      {selectedDocument.reviewedDate && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Under Review</p>
+                            <p className="text-xs text-gray-500">{new Date(selectedDocument.reviewedDate).toLocaleString()}</p>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    {selectedDocument.rejectedAt && (
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            Rejected
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(
-                              selectedDocument.rejectedAt
-                            ).toLocaleString()}
-                          </p>
+                      )}
+                      {selectedDocument.approvedAt && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Approved</p>
+                            <p className="text-xs text-gray-500">{new Date(selectedDocument.approvedAt).toLocaleString()}</p>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                      {selectedDocument.rejectedAt && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Rejected</p>
+                            <p className="text-xs text-gray-500">{new Date(selectedDocument.rejectedAt).toLocaleString()}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* right - 30% (on md and up) - payment / future data */}
+              {/* hidden on small screens unless toggled */}
+              <div className={`w-full md:w-[30%] bg-gray-50 border-l border-gray-200 p-6 overflow-y-auto ${showPaymentPanelMobile ? 'block' : 'hidden'} md:block`}>
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-lg font-medium text-gray-900">Payment / Future Data</h4>
+                  <span className="text-xs text-gray-500">Preview</span>
+                </div>
+
+                {/* placeholder fields for future payment info - replace with real fields later */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Payment Status</label>
+                    <div className="text-sm text-gray-700">{selectedDocument.paymentStatus || 'Not recorded'}</div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Amount Due</label>
+                    <div className="text-sm text-gray-700">{selectedDocument.amountDue ? `₱ ${selectedDocument.amountDue}` : '—'}</div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Receipt / Reference</label>
+                    <div className="text-sm text-gray-700">{selectedDocument.paymentReference || '—'}</div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                    <div className="text-sm text-gray-700">{selectedDocument.paymentMethod || '—'}</div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <div className="text-sm text-gray-700 bg-white p-3 rounded-md">{selectedDocument.paymentNotes || 'No notes'}</div>
+                  </div>
+
+                  {/* example action */}
+                  <div className="pt-4 border-t border-gray-200">
+                    <button onClick={() => alert('Open payment flow (placeholder)')} className="w-full px-4 py-2 rounded-md bg-teal-600 text-white text-sm">Open Payment Flow</button>
                   </div>
                 </div>
               </div>
             </div>
 
+            {/* footer actions - always visible */}
             <div className="px-6 py-4 bg-gray-50 flex gap-3 justify-end rounded-b-lg border-t border-gray-200">
-              <button
-                onClick={() => handleDownloadDocument(selectedDocument)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-              >
+              <button onClick={() => handleDownloadDocument(selectedDocument)} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                 <Download className="w-4 h-4" />
                 Download
               </button>
+
               {selectedDocument.status === "pending" && (
                 <>
-                  <button
-                    onClick={() => {
-                      setShowDocumentModal(false);
-                      handleDocumentAction(selectedDocument, "reject");
-                    }}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
-                  >
-                    Reject
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowDocumentModal(false);
-                      handleDocumentAction(selectedDocument, "approve");
-                    }}
-                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700"
-                  >
-                    Approve
-                  </button>
+                  <button onClick={() => { setShowDocumentModal(false); handleDocumentAction(selectedDocument, "reject"); }} className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700">Reject</button>
+                  <button onClick={() => { setShowDocumentModal(false); handleDocumentAction(selectedDocument, "approve"); }} className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700">Approve</button>
                 </>
               )}
             </div>
@@ -1032,57 +838,26 @@ const DocumentsPage = () => {
         </div>
       )}
 
-      {/* Approval/Rejection Modal */}
+      {/* Approval/Rejection Modal (unchanged) */}
       {showApprovalModal && selectedDocument && (
         <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">
-                Review Application
-              </h3>
-              <p className="text-sm text-gray-500 mt-1">
-                {selectedDocument.name}
-              </p>
+              <h3 className="text-lg font-medium text-gray-900">Review Application</h3>
+              <p className="text-sm text-gray-500 mt-1">{selectedDocument.name}</p>
             </div>
 
             <div className="px-6 py-4">
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Admin Notes / Comments
-                </label>
-                <textarea
-                  value={approvalComment}
-                  onChange={(e) => setApprovalComment(e.target.value)}
-                  placeholder="Add your comments or rejection reason..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  rows={4}
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Admin Notes / Comments</label>
+                <textarea value={approvalComment} onChange={(e) => setApprovalComment(e.target.value)} placeholder="Add your comments or rejection reason..." className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent" rows={4} />
               </div>
             </div>
 
             <div className="px-6 py-4 bg-gray-50 flex gap-3 justify-end rounded-b-lg">
-              <button
-                onClick={() => {
-                  setShowApprovalModal(false);
-                  setSelectedDocument(null);
-                  setApprovalComment("");
-                }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => confirmDocumentAction("rejected")}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
-              >
-                Reject
-              </button>
-              <button
-                onClick={() => confirmDocumentAction("approved")}
-                className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700"
-              >
-                Approve
-              </button>
+              <button onClick={() => { setShowApprovalModal(false); setSelectedDocument(null); setApprovalComment(""); }} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
+              <button onClick={() => confirmDocumentAction("rejected")} className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700">Reject</button>
+              <button onClick={() => confirmDocumentAction("approved")} className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700">Approve</button>
             </div>
           </div>
         </div>
